@@ -1,38 +1,54 @@
-<span style="color:#0366d6;">FLOCK</span>
-Platform for finding friends and organizing events
-FLOCK is a modern social platform that helps you find friends, like-minded people and companies to spend time together. The application combines the functionality of finding new acquaintances through swipes, a system of themed badges and a mechanism for automatically organizing "random evenings".
-🚀 Key Features
-
-Search for friends through swipes: Find interesting people and form new acquaintances in an intuitive interface
-Activity Badges: Get unique achievements for participating in different types of events — "Bar Lover", "Traveler", "Board Games" and others
-Random evenings: Join automatically created thematic events where the system selects the right company by itself
-Automatic Telegram chats: When interests coincide or a group is formed for an event, the system automatically creates a group chat in Telegram, which deletes itself after the date of the event
-
-💻 Technical Stack
-Frontend
-
-Angular 16+
-TypeScript
-Angular Material
-JWT authentication
-
-Backend
-
-Django & Django Rest Framework
-PostgreSQL
-Token-based authorization
-Telegram API integration
-
-🎯 Purpose of the Project
-
-🔧 Installation and Launch
-Coming Soon...
-👥 Authors
-Timur Kharitonov 23B031475
-Amangeldiev Alikhan 23B031206
-Alinur Anatolyev 23B031838
+# 🌌 **FLOCK**  
+A platform for finding friends and organizing events  
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Status-In%20Development-yellow" alt="Status: In Development">
+  <img src="https://img.shields.io/badge/Status-In%20Development-blue" alt="Status: In Development">
   <img src="https://img.shields.io/badge/License-MIT-blue" alt="License: MIT">
+</div>
+
+---
+
+## 🚀 **Key Features**  
+- **Swipe to Connect**: Discover interesting people and form new friendships through an intuitive swipe interface.  
+- **Activity Badges**: Earn unique achievements for participating in events like "Bar Lover," "Traveler," or "Board Games."  
+- **Random Evenings**: Join automatically created themed events with curated groups of like-minded individuals.  
+- **Telegram Integration**: Automatically generated Telegram group chats for events, which self-delete after the event date.  
+
+---
+
+## 💻 **Technical Stack**  
+
+### **Frontend**  
+- Angular 16+  
+- TypeScript  
+- Angular Material  
+- JWT Authentication  
+
+### **Backend**  
+- Django & Django Rest Framework  
+- PostgreSQL  
+- Token-based Authorization  
+- Telegram API Integration  
+
+---
+
+## 🎯 **Purpose of the Project**  
+FLOCK is designed to bring people together by simplifying the process of finding friends and organizing events. Whether you're looking for a casual meetup or a themed event, FLOCK makes it easy to connect with like-minded individuals.  
+
+---
+
+## 🔧 **Installation and Launch**  
+Coming Soon...  
+
+---
+
+## 👥 **Authors**  
+- Timur Kharitonov (23B031475)  
+- Amangeldiev Alikhan (23B031206)  
+- Alinur Anatolyev (23B031838)  
+
+---
+
+<div align="center">
+  <h3>Made with ❤️ by the FLOCK Team</h3>
 </div>
