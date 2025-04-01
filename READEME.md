@@ -44,7 +44,7 @@ Coming Soon...
 
 ## 👥 **Authors**  
 - Timur Kharitonov (23B031475)  
-- Amangeldiev Alikhan (23B031206)  
+- Amangeldiyev Alikhan (23B031206)  
 - Alinur Anatolyev (23B031838)  
 
 ---
