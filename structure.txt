@@ -1,0 +1,65 @@
+WebDevProject/
+├── backend/                        # Django + DRF backend
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   ├── flock_backend/             # Основной Django проект
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   └── api/                       # Django-приложение с бизнес-логикой
+│       ├── __init__.py
+│       ├── models.py
+│       ├── views.py
+│       ├── serializers.py
+│       ├── urls.py
+│       ├── permissions.py
+│       ├── signals.py
+│       └── tests/
+│           └── test_events.py
+│
+├── telegram_bot/                  # Telegram бот
+│   ├── bot.py
+│   ├── handlers.py
+│   ├── chat_utils.py
+│   ├── scheduler.py
+│   └── requirements.txt
+│
+├── flock/                         # Angular frontend (уже создана)
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── components/
+│   │   │   │   ├── login/
+│   │   │   │   ├── register/
+│   │   │   │   ├── swipe/
+│   │   │   │   ├── profile/
+│   │   │   │   ├── random-events/
+│   │   │   │   ├── my-events/
+│   │   │   │   └── badges/
+│   │   │   ├── services/
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── user.service.ts
+│   │   │   │   ├── swipe.service.ts
+│   │   │   │   ├── events.service.ts
+│   │   │   │   ├── badges.service.ts
+│   │   │   │   └── telegram.service.ts
+│   │   │   ├── guards/
+│   │   │   │   └── auth.guard.ts
+│   │   │   └── interceptors/
+│   │   │       └── jwt.interceptor.ts
+│   │   └── environments/
+│   ├── Dockerfile
+│   ├── angular.json
+│   └── package.json
+│
+├── nginx/
+│   ├── nginx.conf                # Конфигурация прокси
+│   └── ssl/                      # Сертификаты, если нужны
+│
+├── docker-compose.yml            # Общий docker-compose
+├── .env                          # Переменные окружения
+├── .gitignore
+├── README.md
+└── LICENSE
