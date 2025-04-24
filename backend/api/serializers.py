@@ -4,7 +4,10 @@ from .models import User, Badge, Event, Swipe, Chat
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'photo', 'first_name', 'last_name']
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'age', 'telegram_username',
+            'photo', 'bio', 'badges'
+        ]
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:

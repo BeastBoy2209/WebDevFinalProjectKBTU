@@ -1,0 +1,10 @@
+CREATE DATABASE flock_db;
+CREATE USER flock_user WITH PASSWORD 'flock_password';
+ALTER ROLE flock_user SET client_encoding TO 'utf8';
+ALTER ROLE flock_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE flock_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE flock_db TO flock_user;
+GRANT ALL ON SCHEMA public TO flock_user;
+
+python manage.py makemigrations
+python manage.py migrate

@@ -4,7 +4,58 @@ from rest_framework.response import Response
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
 
-# FBV: create_swipe
+# User: только профиль текущего пользователя
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get_object(self):
+        return self.request.user
+
+# Badge CRUD
+class BadgeListCreateView(generics.ListCreateAPIView):
+    queryset = Badge.objects.all()
+    serializer_class = BadgeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class BadgeDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Badge.objects.all()
+    serializer_class = BadgeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+# Event CRUD
+class EventListCreateView(generics.ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+# Swipe CRUD (обычно только create и list нужны)
+class SwipeListCreateView(generics.ListCreateAPIView):
+    queryset = Swipe.objects.all()
+    serializer_class = SwipeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class SwipeDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Swipe.objects.all()
+    serializer_class = SwipeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+# Chat CRUD
+class ChatListCreateView(generics.ListCreateAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ChatDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_swipe(request):
@@ -14,33 +65,10 @@ def create_swipe(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# FBV: assign_badge
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def assign_badge(request):
     user = User.objects.get(pk=request.data['user_id'])
     badge = Badge.objects.get(pk=request.data['badge_id'])
-    # Допустим, у пользователя есть поле badges = models.ManyToManyField(Badge)
     user.badges.add(badge)
     return Response({'status': 'badge assigned'})
-
-# CBV: UserProfileView
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-# CBV: EventListView
-class EventListView(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-# CRUD для Event
-class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
-    permission_classes = [permissions.IsAuthenticated]
