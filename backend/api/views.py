@@ -1,3 +1,5 @@
+from rest_framework import status
+from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -6,14 +8,26 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
+User = get_user_model()
 
-# User: только профиль текущего пользователя
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_object(self):
         return self.request.user
-
+    
+@api_view(['GET'])
+def user_by_telegram_id(request, telegram_user_id):
+    try:
+        user = User.objects.get(telegram_id=telegram_user_id)
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "telegram_id": user.telegram_id,
+            "telegram_username": getattr(user, "telegram_username", None)
+        })
+    except User.DoesNotExist:
+        return Response({"detail": "Not found."}, status=404)
 # Badge CRUD
 class BadgeListCreateView(generics.ListCreateAPIView):
     queryset = Badge.objects.all()
@@ -98,28 +112,23 @@ class TelegramLinkView(APIView):
             all_emails = list(User.objects.values_list('email', flat=True))
             return Response({'error': f'User not found. Tried: {email_clean}. Existing: {all_emails}'}, status=404)
 
-from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-
 @api_view(['GET'])
-def user_by_telegram_id(request, telegram_id):
+def telegram_is_linked(request, telegram_user_id):
     try:
-        user = User.objects.get(telegram_id=telegram_id)
-        return Response({'email': user.email, 'telegram_username': user.telegram_username})
+        user = User.objects.get(telegram_id=telegram_user_id)
+        return Response({"linked": True})
     except User.DoesNotExist:
-        return Response({'error': 'Not found'}, status=404)
-
+        return Response({"linked": False})
+    
 @api_view(['POST'])
-def unlink_telegram(request):
-    data = request.data
-    telegram_id = data.get('telegram_id')
+def telegram_unlink(request):
+    telegram_id = request.data.get("telegram_id")
     if not telegram_id:
-        return Response({'error': 'telegram_id required'}, status=400)
+        return Response({"success": False, "error": "telegram_id required"}, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.get(telegram_id=telegram_id)
         user.telegram_id = None
-        user.telegram_username = ""
         user.save()
-        return Response({'status': 'success'})
+        return Response({"success": True})
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
+        return Response({"success": False, "error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

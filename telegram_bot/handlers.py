@@ -4,8 +4,9 @@ import json
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from chat_utils import create_group_for_event, add_user_to_group, remove_group
+import aiohttp
 
-API_BASE_URL = "http://backend:8000/api"  # <-- для docker и production
+API_BASE_URL = "http://localhost:8000/api"  # <-- для docker и production
 
 logger = logging.getLogger(__name__)
 
@@ -13,24 +14,15 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     user = update.effective_user
     telegram_id = user.id
 
-    # Проверяем, привязан ли telegram_id к пользователю
     is_linked = False
     try:
         resp = requests.get(f"{API_BASE_URL}/users/by-telegram-id/{telegram_id}/", timeout=5)
         if resp.status_code == 200:
-            # Проверяем, что найденный пользователь действительно с этим telegram_id
-            data = resp.json()
-            if data.get("telegram_username") == (user.username or str(user.id)):
-                is_linked = True
-            else:
-                is_linked = True  # даже если username не совпадает, главное что telegram_id есть
+            is_linked = True
     except Exception:
         is_linked = False
 
     if is_linked:
-        await update.message.reply_html(
-            f"Hi {user.mention_html()}! Your Telegram account is already linked to your FLOCK profile."
-        )
         keyboard = [[InlineKeyboardButton("Unlink Telegram Account", callback_data="unlink_telegram")]]
         await update.message.reply_text(
             "You can unlink your Telegram account below:",
@@ -263,11 +255,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     if data == "unlink_telegram":
-        # Отвязываем Telegram
         telegram_id = update.effective_user.id
         try:
             resp = requests.post(f"{API_BASE_URL}/users/unlink-telegram/", json={"telegram_id": telegram_id}, timeout=5)
-            if resp.status_code == 200:
+            if resp.status_code == 200 and resp.json().get("success"):
                 await query.message.edit_text("Your Telegram account has been unlinked from your FLOCK profile.")
             else:
                 await query.message.edit_text("Failed to unlink Telegram account. Try again later.")
@@ -284,3 +275,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         event_id = data.split("_")[-1]
         context.args = [event_id]
         await leave_event_handler(update, context)
+
+async def is_telegram_linked(telegram_user_id):
+    # Пример: запрос к API, который возвращает true/false
+    url = f"http://localhost:8000/api/telegram/is_linked/{telegram_user_id}/"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                return data.get("linked", False)
+    return False

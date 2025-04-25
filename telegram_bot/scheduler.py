@@ -6,7 +6,7 @@ from telegram.ext import Application
 from chat_utils import remove_group
 
 # Configure backend API URL
-API_BASE_URL = "http://backend:8000/api"
+API_BASE_URL = "http://localhost:8000/api"
 
 logger = logging.getLogger(__name__)
 
