@@ -1,6 +1,9 @@
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
 
@@ -72,3 +75,21 @@ def assign_badge(request):
     badge = Badge.objects.get(pk=request.data['badge_id'])
     user.badges.add(badge)
     return Response({'status': 'badge assigned'})
+
+class TelegramLinkView(APIView):
+    permission_classes = []  # Allow any
+    authentication_classes = []
+
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        email = request.data.get('email')
+        telegram_username = request.data.get('telegram_username')
+        if not email or not telegram_username:
+            return Response({'error': 'Email and telegram_username required.'}, status=400)
+        try:
+            user = User.objects.get(email=email)
+            user.telegram_username = telegram_username
+            user.save()
+            return Response({'status': 'success'})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=404)

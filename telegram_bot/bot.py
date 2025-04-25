@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from handlers import (start_handler, help_handler, register_handler, 
-                     join_event_handler, leave_event_handler, button_handler)
+                     join_event_handler, leave_event_handler, button_handler,
+                     ask_email_handler, process_email_handler)
 from scheduler import setup_scheduler
 
 # Load environment variables
@@ -32,6 +33,8 @@ def main():
     application.add_handler(CommandHandler("register", register_handler))
     application.add_handler(CommandHandler("join", join_event_handler))
     application.add_handler(CommandHandler("leave", leave_event_handler))
+    application.add_handler(CommandHandler("pair", ask_email_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_email_handler))
     
     # Add callback query handler for inline buttons
     application.add_handler(CallbackQueryHandler(button_handler))

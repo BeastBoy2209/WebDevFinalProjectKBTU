@@ -15,8 +15,13 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     user = update.effective_user
     await update.message.reply_html(
         f"Hi {user.mention_html()}! I'm the Flock Events bot. I'll help you connect with event participants.\n\n"
-        f"Use /register to link your Telegram account with your Flock account.\n"
+        f"To link your Telegram account with your FLOCK profile, press the button below or send /pair.\n\n"
         f"Use /help to see all available commands."
+    )
+    keyboard = [[InlineKeyboardButton("Pair Telegram Account", callback_data="pair_telegram")]]
+    await update.message.reply_text(
+        "Pair your Telegram account:",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -59,6 +64,48 @@ async def register_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             'first_name': user.first_name,
             'last_name': user.last_name
         }
+
+async def ask_email_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Ask user for email to link Telegram account."""
+    text = "Please enter the email you used to register on FLOCK.com to link your Telegram account."
+    user_id = update.effective_user.id
+    # 1. Обычное сообщение
+    if getattr(update, "message", None) and hasattr(update.message, "reply_text"):
+        await update.message.reply_text(text)
+    # 2. CallbackQuery с message
+    elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None) and hasattr(update.callback_query.message, "reply_text"):
+        await update.callback_query.message.reply_text(text)
+    # 3. CallbackQuery без message или fallback
+    else:
+        await context.bot.send_message(chat_id=user_id, text=text)
+    context.user_data['awaiting_email'] = True
+
+async def process_email_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Process email, link Telegram account via backend, and inform user."""
+    if not context.user_data.get('awaiting_email'):
+        return  # Ignore if not waiting for email
+    email = update.message.text.strip()
+    telegram_username = update.effective_user.username or str(update.effective_user.id)
+    payload = {'email': email, 'telegram_username': telegram_username}
+    try:
+        resp = requests.post(f"{API_BASE_URL}/telegram-link/", json=payload)
+        if resp.status_code == 200:
+            await update.message.reply_text(
+                "✅ Your Telegram account has been successfully linked to your FLOCK profile!"
+            )
+        elif resp.status_code == 404:
+            await update.message.reply_text(
+                "❌ No FLOCK user found with this email. Please check your email and try again."
+            )
+        else:
+            await update.message.reply_text(
+                "❌ An error occurred while linking your account. Please try again later."
+            )
+    except Exception as e:
+        await update.message.reply_text(
+            "❌ Could not connect to the server. Please try again later."
+        )
+    context.user_data['awaiting_email'] = False
 
 async def join_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Join a Telegram group for an event."""
@@ -162,18 +209,22 @@ async def leave_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle button presses from inline keyboards."""
     query = update.callback_query
+    if not query:
+        return
+        
     await query.answer()
-    
-    # Parse the callback data
     data = query.data
     
+    if data == "pair_telegram":
+        await ask_email_handler(update, context)
+        return
+        
+    # Handle other button cases
     if data.startswith("join_event_"):
         event_id = data.split("_")[-1]
-        # Simulate the /join command
         context.args = [event_id]
         await join_event_handler(update, context)
     elif data.startswith("leave_event_"):
         event_id = data.split("_")[-1]
-        # Simulate the /leave command
         context.args = [event_id]
         await leave_event_handler(update, context)

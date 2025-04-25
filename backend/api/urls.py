@@ -5,7 +5,7 @@ from .views import (
     EventListCreateView, EventDetailView,
     SwipeListCreateView, SwipeDetailView,
     ChatListCreateView, ChatDetailView,
-    create_swipe, assign_badge
+    create_swipe, assign_badge, TelegramLinkView
 )
 
 urlpatterns = [
@@ -20,4 +20,5 @@ urlpatterns = [
     path('chats/<int:pk>/', ChatDetailView.as_view()),
     path('swipe/', create_swipe),           
     path('assign-badge/', assign_badge),   
+    path('telegram-link/', TelegramLinkView.as_view()),
 ]
