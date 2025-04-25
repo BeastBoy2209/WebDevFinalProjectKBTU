@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
@@ -60,6 +60,7 @@ class ChatDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def create_swipe(request):
     serializer = SwipeSerializer(data=request.data)
     if serializer.is_valid():
@@ -68,6 +69,7 @@ def create_swipe(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def assign_badge(request):
     user = User.objects.get(pk=request.data['user_id'])
     badge = Badge.objects.get(pk=request.data['badge_id'])
@@ -97,29 +99,3 @@ class TelegramLinkView(APIView):
             # Для отладки: вывести все email в базе
             all_emails = list(User.objects.values_list('email', flat=True))
             return Response({'error': f'User not found. Tried: {email_clean}. Existing: {all_emails}'}, status=404)
-
-from rest_framework.decorators import api_view
-from rest_framework.parsers import JSONParser
-
-@api_view(['GET'])
-def user_by_telegram_id(request, telegram_id):
-    try:
-        user = User.objects.get(telegram_id=telegram_id)
-        return Response({'email': user.email, 'telegram_username': user.telegram_username})
-    except User.DoesNotExist:
-        return Response({'error': 'Not found'}, status=404)
-
-@api_view(['POST'])
-def unlink_telegram(request):
-    data = request.data
-    telegram_id = data.get('telegram_id')
-    if not telegram_id:
-        return Response({'error': 'telegram_id required'}, status=400)
-    try:
-        user = User.objects.get(telegram_id=telegram_id)
-        user.telegram_id = None
-        user.telegram_username = ""
-        user.save()
-        return Response({'status': 'success'})
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
