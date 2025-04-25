@@ -1,0 +1,244 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f7fa;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h1 {
+  color: #3a3a3a;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.login-header p {
+  color: #777;
+  font-size: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #5c6bc0;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
+}
+
+.error-message {
+  color: #e53935;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Button styling */
+.btn {
+  display: inline-block;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 14px 24px;
+  font-size: 16px;
+  line-height: 1.5;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: #43a047;
+  color: white;
+  box-shadow: 0 4px 6px rgba(67, 160, 71, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: #388e3c;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 14px rgba(67, 160, 71, 0.25);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(67, 160, 71, 0.2);
+}
+
+.btn-primary:disabled {
+  background-color: #b0bec5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-login {
+  font-size: 17px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 25px;
+  padding: 10px;
+  color: #777;
+  font-size: 15px;
+}
+
+.register-link a {
+  color: #5c6bc0;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 5px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.register-link a:hover {
+  border-bottom-color: #5c6bc0;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  color: #777;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  color: #5c6bc0;
+  text-decoration: underline;
+}
+
+/* Social login buttons */
+.social-login {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.social-login p {
+  color: #777;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.social-login p:before,
+.social-login p:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.social-login p:before {
+  left: 0;
+}
+
+.social-login p:after {
+  right: 0;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  border: 1px solid #eee;
+  transition: all 0.2s;
+}
+
+.social-btn:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+/* Loading Spinner */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-3 {
+  margin-top: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .login-card {
+    padding: 20px;
+  }
+  
+  .login-header h1 {
+    font-size: 24px;
+  }
+  
+  .form-control {
+    padding: 10px 12px;
+  }
+}
