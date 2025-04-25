@@ -1,5 +1,3 @@
-from rest_framework import status
-from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -8,7 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
-User = get_user_model()
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
@@ -132,3 +131,20 @@ def telegram_unlink(request):
         return Response({"success": True})
     except User.DoesNotExist:
         return Response({"success": False, "error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(request, email=email, password=password)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'token': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'fullName': user.get_full_name(),
+                }
+            })
+        return Response({'message': 'Неверный email или пароль'}, status=status.HTTP_401_UNAUTHORIZED)

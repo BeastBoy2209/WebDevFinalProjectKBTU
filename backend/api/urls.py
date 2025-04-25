@@ -9,9 +9,11 @@ from .views import (
     SwipeListCreateView, SwipeDetailView,
     ChatListCreateView, ChatDetailView,
     create_swipe, assign_badge, TelegramLinkView,
+    LoginView
 )
 
 urlpatterns = [
+    path('auth/login', LoginView.as_view(), name='login'),
     path('profile/', UserProfileView.as_view()),
     path('badges/', BadgeListCreateView.as_view()),
     path('badges/<int:pk>/', BadgeDetailView.as_view()),
