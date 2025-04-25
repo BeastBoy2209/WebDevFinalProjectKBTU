@@ -1,4 +1,5 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -24,7 +25,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +48,8 @@ export class LoginComponent implements OnInit {
   }
 
   private handleBrowserExtensions(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     try {
       if (window && (window as any).binance) {
         console.log('Обнаружено Binance расширение, применяются исправления');
@@ -69,8 +73,10 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('Нажата кнопка входа');
     // Stop here if form is invalid
     if (this.loginForm.invalid) {
+      console.log('Форма входа невалидна', this.loginForm.errors);
       return;
     }
 
@@ -83,14 +89,17 @@ export class LoginComponent implements OnInit {
 
     // Дополнительная проверка формата email
     if (!this.isValidEmail(email)) {
+      console.log('Некорректный формат email');
       this.errorMessage = 'Некорректный формат email';
       this.loading = false;
       return;
     }
 
     try {
+      console.log('Отправка запроса на авторизацию', { email });
       this.authService.login(email, password).subscribe({
         next: (response) => {
+          console.log('Получен ответ от сервера:', response);
           // Проверка наличия токена в ответе
           if (response && response.token) {
             console.log('Успешная авторизация, перенаправление...');
@@ -105,8 +114,8 @@ export class LoginComponent implements OnInit {
             this.loading = false;
           }
         },
-        error: (error: HttpErrorResponse) => {
-          console.error('Ошибка авторизации:', error);
+        error: (error) => {
+          console.error('Ошибка входа:', error);
           
           if (error.status === 401) {
             this.errorMessage = 'Неверный email или пароль';
@@ -132,9 +141,6 @@ export class LoginComponent implements OnInit {
             this.errorMessage = 'Ошибка входа. Пожалуйста, проверьте ваши данные.';
           }
           
-          this.loading = false;
-        },
-        complete: () => {
           this.loading = false;
         }
       });

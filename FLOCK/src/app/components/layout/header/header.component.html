@@ -1,0 +1,34 @@
+<header class="main-header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a routerLink="/">
+          <span class="logo-text">FLOCK</span>
+        </a>
+      </div>
+      
+      <nav class="main-nav">
+        <ng-container *ngIf="authService.isLoggedIn()">
+          <ul class="nav-links">
+            <li><a routerLink="/swipe" routerLinkActive="active">Свайпы</a></li>
+            <li><a routerLink="/events/random" routerLinkActive="active">Случайные события</a></li>
+            <li><a routerLink="/events/my" routerLinkActive="active">Мои события</a></li>
+            <li><a routerLink="/badges" routerLinkActive="active">Бейджи</a></li>
+            <li><a routerLink="/profile" routerLinkActive="active">Профиль</a></li>
+          </ul>
+        </ng-container>
+      </nav>
+      
+      <div class="auth-actions">
+        <ng-container *ngIf="!authService.isLoggedIn()">
+          <a routerLink="/login" class="auth-btn login-btn">Вход</a>
+          <a routerLink="/register" class="auth-btn register-btn">Регистрация</a>
+        </ng-container>
+        
+        <ng-container *ngIf="authService.isLoggedIn()">
+          <button class="auth-btn logout-btn" (click)="logout()">Выход</button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</header>

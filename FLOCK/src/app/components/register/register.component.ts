@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthResponse } from '../../models/models';
 
 @Component({
   selector: 'app-register',
@@ -63,8 +64,10 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('Нажата кнопка регистрации');
     // Stop here if form is invalid
     if (this.registerForm.invalid) {
+      console.log('Форма регистрации невалидна', this.registerForm.errors);
       this.markFormGroupTouched(this.registerForm);
       return;
     }
@@ -73,17 +76,25 @@ export class RegisterComponent implements OnInit {
     this.errorMessage = '';
 
     const formData = new FormData();
-    formData.append('username', this.registerForm.get('username')?.value.trim());
-    formData.append('email', this.registerForm.get('email')?.value.trim().toLowerCase());
-    formData.append('password', this.registerForm.get('password')?.value);
-    formData.append('password_confirm', this.registerForm.get('confirmPassword')?.value);
+    const username = this.registerForm.get('username')?.value.trim();
+    const email = this.registerForm.get('email')?.value.trim().toLowerCase();
+    const password = this.registerForm.get('password')?.value;
+    const confirmPassword = this.registerForm.get('confirmPassword')?.value;
+    
+    console.log('Данные формы:', { username, email, hasPassword: !!password, hasFile: !!this.selectedFile });
+    
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('password_confirm', confirmPassword);
     
     if (this.selectedFile) {
       formData.append('profile_image', this.selectedFile);
     }
 
+    console.log('Отправка запроса на регистрацию');
     this.authService.register(formData).subscribe({
-      next: (response) => {
+      next: (response: AuthResponse) => {
         console.log('Успешная регистрация', response);
         // Navigate to login after successful registration
         this.router.navigate(['/login'], { 
