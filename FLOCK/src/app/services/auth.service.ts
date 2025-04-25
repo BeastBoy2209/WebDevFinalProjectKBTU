@@ -78,7 +78,9 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    console.log('isAuthenticated проверка - токен:', !!token);
+    return !!token;
   }
 
   getCurrentUser(): any {

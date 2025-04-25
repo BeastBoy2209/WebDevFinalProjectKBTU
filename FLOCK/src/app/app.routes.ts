@@ -12,10 +12,12 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'swipe', component: SwipeComponent, canActivate: [AuthGuard] },
-  { path: 'events/my', component: MyEventsComponent, canActivate: [AuthGuard] },
-  { path: 'events/random', component: RandomEventsComponent, canActivate: [AuthGuard] },
+  // Изменяем пути для соответствия ссылкам в header
+  { path: 'my-events', component: MyEventsComponent, canActivate: [AuthGuard] },
+  { path: 'random-events', component: RandomEventsComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'badges', component: BadgesComponent, canActivate: [AuthGuard] },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+  // Редиректим корневой путь на swipe вместо login
+  { path: '', redirectTo: 'swipe', pathMatch: 'full' },
+  { path: '**', redirectTo: 'swipe' }
 ];

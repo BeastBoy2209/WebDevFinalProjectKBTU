@@ -38,8 +38,8 @@ export class LoginComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
     
-    // Очищаем данные старой сессии при открытии страницы логина
-    this.authService.logout();
+    // НЕ очищаем данные старой сессии при открытии страницы логина
+    // this.authService.logout();
     
     // Проверяем, пришел ли пользователь после успешной регистрации
     this.route.queryParams.subscribe(params => {

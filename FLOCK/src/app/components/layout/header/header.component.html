@@ -8,26 +8,24 @@
       </div>
       
       <nav class="main-nav">
-        <ng-container *ngIf="authService.isLoggedIn()">
-          <ul class="nav-links">
-            <li><a routerLink="/swipe" routerLinkActive="active">Свайпы</a></li>
-            <li><a routerLink="/events/random" routerLinkActive="active">Случайные события</a></li>
-            <li><a routerLink="/events/my" routerLinkActive="active">Мои события</a></li>
-            <li><a routerLink="/badges" routerLinkActive="active">Бейджи</a></li>
-            <li><a routerLink="/profile" routerLinkActive="active">Профиль</a></li>
-          </ul>
-        </ng-container>
+        <ul class="nav-links">
+          <li><a routerLink="/swipe" routerLinkActive="active">Discover</a></li>
+          <li><a routerLink="/my-events" routerLinkActive="active">My Events</a></li>
+          <li><a routerLink="/random-events" routerLinkActive="active">Random Events</a></li>
+          <li><a routerLink="/badges" routerLinkActive="active">Badges</a></li>
+        </ul>
       </nav>
       
       <div class="auth-actions">
-        <ng-container *ngIf="!authService.isLoggedIn()">
-          <a routerLink="/login" class="auth-btn login-btn">Вход</a>
-          <a routerLink="/register" class="auth-btn register-btn">Регистрация</a>
+        <ng-container *ngIf="!authService.isAuthenticated(); else authenticatedUser">
+          <a routerLink="/login" class="auth-btn login-btn">Sign In</a>
+          <a routerLink="/register" class="auth-btn register-btn">Sign Up</a>
         </ng-container>
         
-        <ng-container *ngIf="authService.isLoggedIn()">
-          <button class="auth-btn logout-btn" (click)="logout()">Выход</button>
-        </ng-container>
+        <ng-template #authenticatedUser>
+          <a routerLink="/profile" class="auth-btn profile-btn">Profile</a>
+          <button class="auth-btn logout-btn" (click)="logout()">Sign Out</button>
+        </ng-template>
       </div>
     </div>
   </div>
