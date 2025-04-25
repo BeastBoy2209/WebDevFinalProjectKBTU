@@ -14,18 +14,20 @@ export class AuthService {
   public currentUser = this.currentUserSubject.asObservable();
   
   private apiUrl = environment.apiUrl;
+  private isBrowser: boolean;
 
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    if (isPlatformBrowser(this.platformId)) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
       this.loadStoredUser();
     }
   }
 
   private loadStoredUser() {
-    if (isPlatformBrowser(this.platformId)) {
+    if (this.isBrowser) {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('currentUser');
       if (storedToken && storedUser) {
@@ -40,33 +42,34 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/auth/login`, { email, password })
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap(response => {
-          if (response && response.token && isPlatformBrowser(this.platformId)) {
+          if (response && response.token && this.isBrowser) {
             localStorage.setItem('token', response.token);
             localStorage.setItem('currentUser', JSON.stringify(response.user));
             this.currentUserSubject.next(response.user);
+            console.log('Токен сохранен:', response.token);
           }
         })
       );
   }
 
   register(formData: FormData): Observable<AuthResponse> {
-    console.log('Отправка запроса на регистрацию', this.apiUrl + '/auth/register');
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, formData).pipe(
       tap(response => {
-        if (response && response.token && isPlatformBrowser(this.platformId)) {
+        if (response && response.token && this.isBrowser) {
           localStorage.setItem('token', response.token);
           localStorage.setItem('currentUser', JSON.stringify(response.user));
           this.currentUserSubject.next(response.user);
+          console.log('Токен сохранен после регистрации:', response.token);
         }
       })
     );
   }
 
   logout() {
-    if (isPlatformBrowser(this.platformId)) {
+    if (this.isBrowser) {
       localStorage.removeItem('token');
       localStorage.removeItem('currentUser');
     }
@@ -74,12 +77,11 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return isPlatformBrowser(this.platformId) ? localStorage.getItem('token') : null;
+    return this.isBrowser ? localStorage.getItem('token') : null;
   }
 
   isAuthenticated(): boolean {
     const token = this.getToken();
-    console.log('isAuthenticated проверка - токен:', !!token);
     return !!token;
   }
 

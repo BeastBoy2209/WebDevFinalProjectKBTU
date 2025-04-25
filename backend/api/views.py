@@ -5,16 +5,49 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import User, Badge, Event, Swipe, Chat
-from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
+from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer, UserProfilePictureSerializer
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
+    """
+    API для получения и обновления профиля пользователя
+    GET: получить профиль текущего пользователя
+    PATCH/PUT: обновить профиль текущего пользователя
+    """
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+
+
+class UserProfilePictureView(generics.UpdateAPIView):
+    """
+    API для обновления фото профиля пользователя
+    PATCH: обновить фото профиля
+    """
+    serializer_class = UserProfilePictureSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get_object(self):
         return self.request.user
     
+    def patch(self, request, *args, **kwargs):
+        user = self.get_object()
+        
+        if 'profile_picture' not in request.FILES:
+            return Response(
+                {"error": "Необходимо загрузить файл изображения"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.photo = request.FILES['profile_picture']
+        user.save()
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
 @api_view(['GET'])
 def user_by_telegram_id(request, telegram_user_id):
     try:

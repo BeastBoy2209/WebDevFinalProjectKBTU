@@ -4,18 +4,23 @@ from .views import (
     telegram_unlink,
     user_by_telegram_id,
     UserProfileView,
+    UserProfilePictureView,
     BadgeListCreateView, BadgeDetailView,
     EventListCreateView, EventDetailView,
     SwipeListCreateView, SwipeDetailView,
     ChatListCreateView, ChatDetailView,
     create_swipe, assign_badge, TelegramLinkView,
-    LoginView, RegisterView  # Добавим новый импорт
+    LoginView, RegisterView
 )
 
 urlpatterns = [
     path('auth/login', LoginView.as_view(), name='login'),
-    path('auth/register', RegisterView.as_view(), name='register'),  # Новый маршрут
-    path('profile/', UserProfileView.as_view()),
+    path('auth/register', RegisterView.as_view(), name='register'),
+    # Обновленные пути для работы с профилем пользователя
+    path('users/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('users/profile/picture/', UserProfilePictureView.as_view(), name='user-profile-picture'),
+    # ...existing code...
+    path('profile/', UserProfileView.as_view()),  # Оставляем старый путь для совместимости
     path('badges/', BadgeListCreateView.as_view()),
     path('badges/<int:pk>/', BadgeDetailView.as_view()),
     path('events/', EventListCreateView.as_view()),

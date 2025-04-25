@@ -1,1 +1,147 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-card">
+    <h1 class="profile-title">Профиль</h1>
+
+    <div *ngIf="loading" class="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="user && !loading" class="profile-content">
+      <!-- Фото профиля -->
+      <div class="profile-photo-section">
+        <div class="profile-photo-container">
+          <img 
+            [src]="imagePreview || user.photo || '/assets/default-avatar.png'" 
+            alt="Фото профиля" 
+            class="profile-photo" />
+        </div>
+        
+        <div class="photo-actions">
+          <input 
+            type="file" 
+            id="profile-photo-input" 
+            accept="image/*" 
+            (change)="onFileSelected($event)" 
+            style="display: none;">
+          
+          <!-- Изменено: использование isBrowser && document только если они доступны -->
+          <button class="btn btn-outlined" (click)="isBrowser && document?.getElementById('profile-photo-input')?.click()">
+            Выбрать фото
+          </button>
+
+          <button 
+            class="btn btn-primary" 
+            [disabled]="!selectedFile" 
+            (click)="uploadProfilePicture()">
+            Обновить фото
+          </button>
+        </div>
+      </div>
+
+      <!-- Информация профиля -->
+      <div class="profile-details">
+        <!-- Режим просмотра -->
+        <div *ngIf="!isEditing" class="view-mode">
+          <div class="detail-row">
+            <span class="label">Имя:</span>
+            <span class="value">{{ user.first_name }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Фамилия:</span>
+            <span class="value">{{ user.last_name || 'Не указана' }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ user.email }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Возраст:</span>
+            <span class="value">{{ user.age || 'Не указан' }}</span>
+          </div>
+          
+          <div class="detail-row bio-row">
+            <span class="label">О себе:</span>
+            <span class="value">{{ user.bio || 'Нет информации' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Telegram:</span>
+            <span class="value">{{ user.telegram_username || 'Не привязан' }}</span>
+          </div>
+          
+          <button class="btn btn-primary edit-btn" (click)="toggleEdit()">
+            Редактировать профиль
+          </button>
+        </div>
+
+        <!-- Режим редактирования -->
+        <form *ngIf="isEditing" [formGroup]="profileForm" (submit)="onSubmit()" class="edit-mode">
+          <div class="form-group">
+            <label for="first_name">Имя*</label>
+            <input 
+              type="text" 
+              id="first_name" 
+              formControlName="first_name" 
+              class="form-control">
+            <div *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error-text">
+              Имя обязательно для заполнения
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="last_name">Фамилия</label>
+            <input 
+              type="text" 
+              id="last_name" 
+              formControlName="last_name" 
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="age">Возраст</label>
+            <input 
+              type="number" 
+              id="age" 
+              formControlName="age" 
+              class="form-control">
+            <div *ngIf="profileForm.get('age')?.invalid && profileForm.get('age')?.touched" class="error-text">
+              Возраст должен быть от 18 до 100 лет
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="bio">О себе</label>
+            <textarea 
+              id="bio" 
+              formControlName="bio" 
+              class="form-control bio-textarea"
+              rows="4"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-outlined" (click)="toggleEdit()">
+              Отмена
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary" 
+              [disabled]="profileForm.invalid || loading">
+              Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

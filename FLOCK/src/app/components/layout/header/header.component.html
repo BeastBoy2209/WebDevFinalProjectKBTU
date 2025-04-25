@@ -17,15 +17,16 @@
       </nav>
       
       <div class="auth-actions">
-        <ng-container *ngIf="!authService.isAuthenticated(); else authenticatedUser">
-          <a routerLink="/login" class="auth-btn login-btn">Sign In</a>
-          <a routerLink="/register" class="auth-btn register-btn">Sign Up</a>
-        </ng-container>
-        
-        <ng-template #authenticatedUser>
+        <!-- Замените проверку authService.isAuthenticated() на isBrowser && authService.isAuthenticated() -->
+        <div *ngIf="isBrowser && authService.isAuthenticated()">
           <a routerLink="/profile" class="auth-btn profile-btn">Profile</a>
           <button class="auth-btn logout-btn" (click)="logout()">Sign Out</button>
-        </ng-template>
+        </div>
+
+        <div *ngIf="!(isBrowser && authService.isAuthenticated())">
+          <a routerLink="/login" class="auth-btn login-btn">Sign In</a>
+          <a routerLink="/register" class="auth-btn register-btn">Sign Up</a>
+        </div>
       </div>
     </div>
   </div>

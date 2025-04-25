@@ -13,4 +13,8 @@ import { FooterComponent } from './components/layout/footer/footer.component';
 })
 export class AppComponent {
   title = 'FLOCK';
+
+  ngOnInit() {
+    // Удаляем вывод в консоль, если он есть
+  }
 }

@@ -72,8 +72,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
-    console.log('Нажата кнопка входа');
+  onSubmit() {
     // Stop here if form is invalid
     if (this.loginForm.invalid) {
       console.log('Форма входа невалидна', this.loginForm.errors);
