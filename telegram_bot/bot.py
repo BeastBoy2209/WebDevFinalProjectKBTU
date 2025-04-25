@@ -27,25 +27,15 @@ def main():
         .build()
     )
 
-
+    # Add command handlers
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("help", help_handler))
     application.add_handler(CommandHandler("register", register_handler))
     application.add_handler(CommandHandler("join", join_event_handler))
     application.add_handler(CommandHandler("leave", leave_event_handler))
     application.add_handler(CommandHandler("pair", ask_email_handler))
-
-    # Заменяем обработчик сообщений:
-    async def email_only_handler(update, context):
-        if context.user_data.get('awaiting_email'):
-            await process_email_handler(update, context)
-        else:
-            # Можно просто игнорировать или отправить сообщение:
-            # await update.message.reply_text("Please use the menu or commands.")
-            pass
-
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, email_only_handler))
-
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_email_handler))
+    
     # Add callback query handler for inline buttons
     application.add_handler(CallbackQueryHandler(button_handler))
     

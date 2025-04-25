@@ -31,7 +31,6 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
     telegram_username = models.CharField(max_length=64, blank=True)
-    telegram_id = models.BigIntegerField(blank=True, null=True, unique=True)  # <--- добавить это поле
     photo = models.ImageField(upload_to='user_photos/', blank=True, null=True)
     bio = models.TextField(blank=True)
     badges = models.ManyToManyField('Badge', related_name='users', blank=True)

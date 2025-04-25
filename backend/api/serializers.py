@@ -6,7 +6,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'first_name', 'last_name', 'age', 'telegram_username',
-            'telegram_id',
             'photo', 'bio', 'badges'
         ]
 

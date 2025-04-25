@@ -84,18 +84,12 @@ class TelegramLinkView(APIView):
     def post(self, request):
         email = request.data.get('email')
         telegram_username = request.data.get('telegram_username')
-        telegram_id = request.data.get('telegram_id')
-        if not email or not telegram_username or not telegram_id:
-            return Response({'error': 'Email, telegram_username and telegram_id required.'}, status=400)
-        # Привести email к нижнему регистру и убрать пробелы
-        email_clean = email.strip().lower()
+        if not email or not telegram_username:
+            return Response({'error': 'Email and telegram_username required.'}, status=400)
         try:
-            user = User.objects.get(email=email_clean)
+            user = User.objects.get(email=email)
             user.telegram_username = telegram_username
-            user.telegram_id = telegram_id
             user.save()
             return Response({'status': 'success'})
         except User.DoesNotExist:
-            # Для отладки: вывести все email в базе
-            all_emails = list(User.objects.values_list('email', flat=True))
-            return Response({'error': f'User not found. Tried: {email_clean}. Existing: {all_emails}'}, status=404)
+            return Response({'error': 'User not found.'}, status=404)
