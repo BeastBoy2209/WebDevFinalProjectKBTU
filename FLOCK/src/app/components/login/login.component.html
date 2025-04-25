@@ -1,0 +1,60 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Войти в FLOCK</h1>
+      <p>Войдите в свой аккаунт, чтобы продолжить</p>
+    </div>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email адрес</label>
+        <input 
+          type="email" 
+          id="email" 
+          class="form-control" 
+          formControlName="email" 
+          placeholder="Введите ваш email"
+          autocomplete="email">
+        <div *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.dirty || loginForm.get('email')?.touched)" class="error-message">
+          <div *ngIf="loginForm.get('email')?.errors?.['required']">Email обязателен</div>
+          <div *ngIf="loginForm.get('email')?.errors?.['email']">Введите корректный email адрес</div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input 
+          type="password" 
+          id="password" 
+          class="form-control" 
+          formControlName="password" 
+          placeholder="Введите ваш пароль"
+          autocomplete="current-password">
+        <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)" class="error-message">
+          <div *ngIf="loginForm.get('password')?.errors?.['required']">Пароль обязателен</div>
+          <div *ngIf="loginForm.get('password')?.errors?.['minlength']">Пароль должен содержать не менее 6 символов</div>
+        </div>
+      </div>
+      
+      <div class="forgot-password">
+        <a href="#">Забыли пароль?</a>
+      </div>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-login" 
+        [disabled]="loginForm.invalid || loading">
+        <span *ngIf="loading" class="spinner"></span>
+        Войти
+      </button>
+
+      <div *ngIf="errorMessage" class="error-message text-center mt-3">
+        {{ errorMessage }}
+      </div>
+    </form>
+    
+    <div class="register-link">
+      Нет аккаунта? <a routerLink="/register">Зарегистрироваться</a>
+    </div>
+  </div>
+</div>

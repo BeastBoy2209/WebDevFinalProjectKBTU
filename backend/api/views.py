@@ -1,19 +1,32 @@
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
-# User: только профиль текущего пользователя
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get_object(self):
         return self.request.user
-
+    
+@api_view(['GET'])
+def user_by_telegram_id(request, telegram_user_id):
+    try:
+        user = User.objects.get(telegram_id=telegram_user_id)
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "telegram_id": user.telegram_id,
+            "telegram_username": getattr(user, "telegram_username", None)
+        })
+    except User.DoesNotExist:
+        return Response({"detail": "Not found."}, status=404)
 # Badge CRUD
 class BadgeListCreateView(generics.ListCreateAPIView):
     queryset = Badge.objects.all()
@@ -60,7 +73,6 @@ class ChatDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
 def create_swipe(request):
     serializer = SwipeSerializer(data=request.data)
     if serializer.is_valid():
@@ -69,7 +81,6 @@ def create_swipe(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
 def assign_badge(request):
     user = User.objects.get(pk=request.data['user_id'])
     badge = Badge.objects.get(pk=request.data['badge_id'])
@@ -84,12 +95,56 @@ class TelegramLinkView(APIView):
     def post(self, request):
         email = request.data.get('email')
         telegram_username = request.data.get('telegram_username')
-        if not email or not telegram_username:
-            return Response({'error': 'Email and telegram_username required.'}, status=400)
+        telegram_id = request.data.get('telegram_id')
+        if not email or not telegram_username or not telegram_id:
+            return Response({'error': 'Email, telegram_username and telegram_id required.'}, status=400)
+        # Привести email к нижнему регистру и убрать пробелы
+        email_clean = email.strip().lower()
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email_clean)
             user.telegram_username = telegram_username
+            user.telegram_id = telegram_id
             user.save()
             return Response({'status': 'success'})
         except User.DoesNotExist:
-            return Response({'error': 'User not found.'}, status=404)
+            # Для отладки: вывести все email в базе
+            all_emails = list(User.objects.values_list('email', flat=True))
+            return Response({'error': f'User not found. Tried: {email_clean}. Existing: {all_emails}'}, status=404)
+
+@api_view(['GET'])
+def telegram_is_linked(request, telegram_user_id):
+    try:
+        user = User.objects.get(telegram_id=telegram_user_id)
+        return Response({"linked": True})
+    except User.DoesNotExist:
+        return Response({"linked": False})
+    
+@api_view(['POST'])
+def telegram_unlink(request):
+    telegram_id = request.data.get("telegram_id")
+    if not telegram_id:
+        return Response({"success": False, "error": "telegram_id required"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(telegram_id=telegram_id)
+        user.telegram_id = None
+        user.save()
+        return Response({"success": True})
+    except User.DoesNotExist:
+        return Response({"success": False, "error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(request, email=email, password=password)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'token': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'fullName': user.get_full_name(),
+                }
+            })
+        return Response({'message': 'Неверный email или пароль'}, status=status.HTTP_401_UNAUTHORIZED)

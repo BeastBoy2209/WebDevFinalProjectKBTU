@@ -1,10 +1,11 @@
 import logging
 import os
 from dotenv import load_dotenv
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from handlers import (start_handler, help_handler, register_handler, 
                      join_event_handler, leave_event_handler, button_handler,
-                     ask_email_handler, process_email_handler)
+                     ask_email_handler, process_email_handler, is_telegram_linked)
 from scheduler import setup_scheduler
 
 # Load environment variables

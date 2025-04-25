@@ -6,6 +6,22 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Предотвращение ошибок от расширений браузера
+    window.addEventListener('error', function(e) {
+      // Фильтрация ошибок, связанных с расширениями
+      if (e.filename && (
+          e.filename.includes('chrome-extension') || 
+          e.filename.includes('moz-extension') ||
+          e.message && e.message.includes('binance')
+      )) {
+        console.warn('Blocked error from browser extension:', e.message);
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, true);
+  </script>
 </head>
 <body>
   <app-root></app-root>

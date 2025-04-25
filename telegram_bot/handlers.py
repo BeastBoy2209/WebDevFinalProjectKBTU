@@ -1,17 +1,12 @@
-import os
-import requests
 import logging
+import requests
 import json
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from chat_utils import create_group_for_event, add_user_to_group, remove_group
+import aiohttp
 
-# Получаем адрес бэкенда из переменной окружения или используем localhost по умолчанию
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
-API_BASE_URL = f"{BACKEND_URL}/api"
-
-# Установим таймаут по умолчанию для всех запросов requests
-REQUESTS_TIMEOUT = 2  # секунды
+API_BASE_URL = "http://localhost:8000/api"  # <-- для docker и production
 
 logger = logging.getLogger(__name__)
 
@@ -19,28 +14,15 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     user = update.effective_user
     telegram_id = user.id
 
-    # Моментальный ответ пользователю
-    await update.message.reply_text("⏳ Проверяем связь вашего Telegram с FLOCK...")
-
     is_linked = False
     try:
-        resp = requests.get(
-            f"{API_BASE_URL}/users/by-telegram-id/{telegram_id}/",
-            timeout=REQUESTS_TIMEOUT
-        )
+        resp = requests.get(f"{API_BASE_URL}/users/by-telegram-id/{telegram_id}/", timeout=5)
         if resp.status_code == 200:
-            data = resp.json()
-            if data.get("telegram_username") == (user.username or str(user.id)):
-                is_linked = True
-            else:
-                is_linked = True
+            is_linked = True
     except Exception:
         is_linked = False
 
     if is_linked:
-        await update.message.reply_html(
-            f"Hi {user.mention_html()}! Your Telegram account is already linked to your FLOCK profile."
-        )
         keyboard = [[InlineKeyboardButton("Unlink Telegram Account", callback_data="unlink_telegram")]]
         await update.message.reply_text(
             "You can unlink your Telegram account below:",
@@ -100,16 +82,35 @@ async def register_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         }
 
 async def ask_email_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Ask user for email to link Telegram account."""
-    text = "Please enter the email you used to register on FLOCK.com to link your Telegram account."
     user_id = update.effective_user.id
-    # 1. Обычное сообщение
+    # Проверяем, привязан ли telegram_id к пользователю
+    try:
+        resp = requests.get(f"{API_BASE_URL}/users/by-telegram-id/{user_id}/", timeout=5)
+        is_linked = resp.status_code == 200
+    except Exception:
+        is_linked = False
+
+    if is_linked:
+        # Уже привязан — показываем только кнопку отвязки
+        text = "Your Telegram account is already linked to your FLOCK profile."
+        if getattr(update, "message", None) and hasattr(update.message, "reply_text"):
+            await update.message.reply_text(text)
+        elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None):
+            await update.callback_query.message.edit_text(text)
+        keyboard = [[InlineKeyboardButton("Unlink Telegram Account", callback_data="unlink_telegram")]]
+        await update.effective_message.reply_text(
+            "You can unlink your Telegram account below:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+        context.user_data['awaiting_email'] = False
+        return
+
+    # Если не привязан — спрашиваем email
+    text = "Please enter the email you used to register on FLOCK.com to link your Telegram account."
     if getattr(update, "message", None) and hasattr(update.message, "reply_text"):
         await update.message.reply_text(text)
-    # 2. CallbackQuery с message
-    elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None) and hasattr(update.callback_query.message, "reply_text"):
-        await update.callback_query.message.reply_text(text)
-    # 3. CallbackQuery без message или fallback
+    elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None):
+        await update.callback_query.message.edit_text(text)
     else:
         await context.bot.send_message(chat_id=user_id, text=text)
     context.user_data['awaiting_email'] = True
@@ -118,9 +119,10 @@ async def process_email_handler(update: Update, context: ContextTypes.DEFAULT_TY
     """Process email, link Telegram account via backend, and inform user."""
     if not context.user_data.get('awaiting_email'):
         return  # Ignore if not waiting for email
-    email = update.message.text.strip()
+    email = update.message.text.strip().lower()
     telegram_username = update.effective_user.username or str(update.effective_user.id)
-    payload = {'email': email, 'telegram_username': telegram_username}
+    telegram_id = update.effective_user.id
+    payload = {'email': email, 'telegram_username': telegram_username, 'telegram_id': telegram_id}
     try:
         resp = requests.post(f"{API_BASE_URL}/telegram-link/", json=payload)
         if resp.status_code == 200:
@@ -154,8 +156,7 @@ async def join_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # Check if event exists and user is registered for it
         response = requests.get(
             f"{API_BASE_URL}/events/{event_id}/participants/",
-            params={"telegram_id": user.id},
-            timeout=REQUESTS_TIMEOUT
+            params={"telegram_id": user.id}
         )
         
         if response.status_code != 200:
@@ -175,8 +176,7 @@ async def join_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
             # Update event in backend with the group info
             requests.patch(
                 f"{API_BASE_URL}/events/{event_id}/",
-                json={"telegram_group_id": group_id, "telegram_group_link": group_link},
-                timeout=REQUESTS_TIMEOUT
+                json={"telegram_group_id": group_id, "telegram_group_link": group_link}
             )
             
             # Update local event_data
@@ -243,18 +243,29 @@ async def leave_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text("Sorry, there was an error processing your request.")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle button presses from inline keyboards."""
     query = update.callback_query
     if not query:
         return
-        
+
     await query.answer()
     data = query.data
-    
+
     if data == "pair_telegram":
         await ask_email_handler(update, context)
         return
-        
+
+    if data == "unlink_telegram":
+        telegram_id = update.effective_user.id
+        try:
+            resp = requests.post(f"{API_BASE_URL}/users/unlink-telegram/", json={"telegram_id": telegram_id}, timeout=5)
+            if resp.status_code == 200 and resp.json().get("success"):
+                await query.message.edit_text("Your Telegram account has been unlinked from your FLOCK profile.")
+            else:
+                await query.message.edit_text("Failed to unlink Telegram account. Try again later.")
+        except Exception:
+            await query.message.edit_text("Failed to unlink Telegram account. Try again later.")
+        return
+
     # Handle other button cases
     if data.startswith("join_event_"):
         event_id = data.split("_")[-1]
@@ -264,3 +275,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         event_id = data.split("_")[-1]
         context.args = [event_id]
         await leave_event_handler(update, context)
+
+async def is_telegram_linked(telegram_user_id):
+    # Пример: запрос к API, который возвращает true/false
+    url = f"http://localhost:8000/api/telegram/is_linked/{telegram_user_id}/"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                return data.get("linked", False)
+    return False
