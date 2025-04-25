@@ -3,21 +3,30 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpInterceptor
+  HttpInterceptor,
+  HttpErrorResponse
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Get the token from the auth service
-    const token = this.authService.getToken();
+    // Не добавляем токен для запросов авторизации
+    if (request.url.includes('/auth/login') || request.url.includes('/auth/register')) {
+      return next.handle(request);
+    }
 
-    // Clone the request and add authorization header if token exists
+    // Для остальных запросов добавляем токен
+    const token = this.authService.getToken();
     if (token) {
       request = request.clone({
         setHeaders: {
@@ -26,6 +35,21 @@ export class JwtInterceptor implements HttpInterceptor {
       });
     }
 
-    return next.handle(request);
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Если ошибка 401 (Unauthorized) или связана с невалидным токеном
+        if (
+          error.status === 401 || 
+          (error.error && 
+           typeof error.error === 'object' && 
+           error.error.code === 'token_not_valid')
+        ) {
+          console.log('Ошибка авторизации в интерсепторе, выполняем выход');
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }

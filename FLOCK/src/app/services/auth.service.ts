@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -36,15 +36,27 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  // Updated to accept email and password separately as required by component
+  // Обновленный метод логина с корректным URL (без завершающего слеша)
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password })
+    // Очищаем существующие токены перед логином
+    this.clearAuthData();
+    
+    // Добавляем заголовки для решения проблем CORS
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password }, { headers })
       .pipe(
         tap(response => this.handleAuthentication(response))
       );
   }
 
   register(userData: any): Observable<AuthResponse> {
+    // Очищаем существующие токены перед регистрацией
+    this.clearAuthData();
+    
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, userData)
       .pipe(
         tap(response => this.handleAuthentication(response))
@@ -52,13 +64,19 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearAuthData();
+  }
+
+  // Метод для очистки данных авторизации
+  private clearAuthData(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     this.currentUserSubject.next(null);
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token;
   }
 
   getToken(): string | null {
@@ -66,9 +84,14 @@ export class AuthService {
   }
 
   private handleAuthentication(response: AuthResponse): void {
-    localStorage.setItem(this.tokenKey, response.token);
-    localStorage.setItem(this.userKey, JSON.stringify(response.user));
-    this.currentUserSubject.next(response.user);
+    if (response && response.token) {
+      console.log('Получен токен авторизации');
+      localStorage.setItem(this.tokenKey, response.token);
+      localStorage.setItem(this.userKey, JSON.stringify(response.user));
+      this.currentUserSubject.next(response.user);
+    } else {
+      console.error('Ошибка в формате ответа авторизации:', response);
+    }
   }
 
   private getUserFromStorage(): User | null {
@@ -76,7 +99,8 @@ export class AuthService {
     if (userData) {
       try {
         return JSON.parse(userData) as User;
-      } catch {
+      } catch (e) {
+        console.error('Ошибка при парсинге данных пользователя:', e);
         return null;
       }
     }
