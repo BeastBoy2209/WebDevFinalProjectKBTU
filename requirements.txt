@@ -1,0 +1,22 @@
+# Основные библиотеки Django
+Django
+djangorestframework
+django-cors-headers
+
+# Аутентификация и токены
+djangorestframework-simplejwt
+
+# База данных
+psycopg2-binary
+
+# Обработка изображений
+Pillow==10.1.0
+
+# Интеграция с Telegram
+python-telegram-bot
+
+# Валидация и парсинг данных
+django-filter
+
+# Утилиты для разработки
+python-dotenv
