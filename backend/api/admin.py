@@ -3,8 +3,8 @@ from .models import User, Badge, Event, Swipe, Chat
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'age', 'telegram_username', 'is_staff', 'is_active')
-    search_fields = ('email', 'first_name', 'last_name', 'telegram_username')
+    list_display = ('email', 'first_name', 'last_name', 'age', 'telegram_username', 'telegram_id', 'is_staff', 'is_active')
+    search_fields = ('email', 'first_name', 'last_name', 'telegram_username', 'telegram_id')
     list_filter = ('is_staff', 'is_active', 'age')
     filter_horizontal = ('badges',)
 
