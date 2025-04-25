@@ -12,15 +12,23 @@ logger = logging.getLogger(__name__)
 
 def setup_scheduler(application: Application):
     """Setup job to clean expired event groups."""
-    # Run once on startup to clean old groups
-    application.create_task(clean_expired_event_groups(application.bot))
-    
+    # Check if job_queue is available
+    if not application.job_queue:
+        logger.error("JobQueue is not available. Please install python-telegram-bot[job-queue]")
+        return
+        
     # Schedule to run daily
     application.job_queue.run_repeating(
-        callback=lambda context: asyncio.create_task(clean_expired_event_groups(context.bot)),
+        callback=run_clean_expired_event_groups,
         interval=timedelta(days=1),
         first=timedelta(seconds=10)  # Start 10 seconds after bot initialization
     )
+    
+    logger.info("Scheduler setup completed successfully")
+
+async def run_clean_expired_event_groups(context):
+    """Wrapper to run the clean_expired_event_groups function"""
+    await clean_expired_event_groups(context.bot)
 
 async def clean_expired_event_groups(bot):
     """

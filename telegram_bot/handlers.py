@@ -87,20 +87,25 @@ async def join_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
             # Create new group for the event
             group_link = await create_group_for_event(context.bot, event_data)
             
+            # Extract group_id from the link
+            group_id = group_link.split('/')[-1]
+            
             # Update event in backend with the group info
             requests.patch(
                 f"{API_BASE_URL}/events/{event_id}/",
-                json={"telegram_group_id": group_link.split('/')[-1], "telegram_group_link": group_link}
+                json={"telegram_group_id": group_id, "telegram_group_link": group_link}
             )
-        else:
-            group_link = event_data['telegram_group_link']
+            
+            # Update local event_data
+            event_data['telegram_group_id'] = group_id
+            event_data['telegram_group_link'] = group_link
         
         # Add user to the group
         await add_user_to_group(context.bot, event_data['telegram_group_id'], user.id)
         
         await update.message.reply_text(
             f"You've been added to the group for {event_data['title']}! "
-            f"Click here to join: {group_link}"
+            f"Click here to join: {event_data['telegram_group_link']}"
         )
         
     except Exception as e:
@@ -131,19 +136,23 @@ async def leave_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             return
         
         # Remove user from the group
-        success = await context.bot.ban_chat_member(
-            chat_id=event_data['telegram_group_id'],
-            user_id=user.id
-        )
-        await context.bot.unban_chat_member(
-            chat_id=event_data['telegram_group_id'],
-            user_id=user.id,
-            only_if_banned=True
-        )
-        
-        if success:
-            await update.message.reply_text(f"You've left the group for {event_data['title']}.")
-        else:
+        try:
+            success = await context.bot.ban_chat_member(
+                chat_id=event_data['telegram_group_id'],
+                user_id=user.id
+            )
+            await context.bot.unban_chat_member(
+                chat_id=event_data['telegram_group_id'],
+                user_id=user.id,
+                only_if_banned=True
+            )
+            
+            if success:
+                await update.message.reply_text(f"You've left the group for {event_data['title']}.")
+            else:
+                await update.message.reply_text("There was an issue leaving the group.")
+        except Exception as e:
+            logger.error(f"Error removing user from group: {e}")
             await update.message.reply_text("There was an issue leaving the group.")
             
     except Exception as e:

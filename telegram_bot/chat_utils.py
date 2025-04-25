@@ -17,9 +17,14 @@ async def create_group_for_event(bot: Bot, event_data: dict) -> str:
         str: Invite link to the created group
     """
     try:
-        # Create a new group
-        chat = await bot.create_supergroup(
-            title=f"Flock: {event_data['title']}",
+        # Create a new group - using create_supergroup method correctly
+        chat = await bot.create_supergroup_chat(
+            title=f"Flock: {event_data['title']}"
+        )
+        
+        # Set the description
+        await bot.set_chat_description(
+            chat_id=chat.id,
             description=f"Group for event: {event_data['title']}\n{event_data['description']}\n\nDate: {event_data['date']}\nLocation: {event_data['location']}"
         )
         

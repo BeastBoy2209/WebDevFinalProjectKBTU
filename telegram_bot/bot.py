@@ -19,8 +19,12 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Start the bot."""
-    # Create the Application
-    application = Application.builder().token(TOKEN).build()
+    # Create the Application with job_queue explicitly enabled
+    application = (
+        Application.builder()
+        .token(TOKEN)
+        .build()
+    )
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_handler))
@@ -32,8 +36,11 @@ def main():
     # Add callback query handler for inline buttons
     application.add_handler(CallbackQueryHandler(button_handler))
     
-    # Setup the event scheduler for cleaning up old chats
-    setup_scheduler(application)
+    # Only setup scheduler if job_queue is available
+    if application.job_queue:
+        setup_scheduler(application)
+    else:
+        logger.warning("JobQueue is not available. Scheduler will not run.")
     
     # Start the Bot
     application.run_polling()
