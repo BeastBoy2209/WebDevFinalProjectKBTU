@@ -84,7 +84,8 @@
       </button>
 
       <div *ngIf="errorMessage" class="error-message text-center mt-3">
-        {{ errorMessage }}
+        <!-- Поддержка многострочных ошибок -->
+        <div *ngFor="let line of errorMessage.split('\n')">{{ line }}</div>
       </div>
     </form>
     

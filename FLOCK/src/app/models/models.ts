@@ -46,12 +46,13 @@ export interface User {
   }
   
   export interface RegisterRequest {
-    username: string;
-    email: string;
-    password: string;
-    password_confirm: string;
-  }
-  
+  username: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  profileImage?: File;
+}
+
   export interface AuthResponse {
     token: string;
     user: User;

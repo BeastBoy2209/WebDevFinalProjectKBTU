@@ -148,3 +148,60 @@ class LoginView(APIView):
                 }
             })
         return Response({'message': 'Неверный email или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class RegisterView(APIView):
+    permission_classes = []  # Allow any - no auth required for registration
+    authentication_classes = []
+
+    def post(self, request):
+        try:
+            # Извлекаем данные из запроса
+            email = request.data.get('email')
+            username = request.data.get('username')
+            password = request.data.get('password')
+            password_confirm = request.data.get('password_confirm')
+            
+            # Базовые проверки данных
+            if not email or not username or not password:
+                return Response({'message': 'Email, имя пользователя и пароль обязательны'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            if password != password_confirm:
+                return Response({'message': 'Пароли не совпадают'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование email
+            if User.objects.filter(email=email).exists():
+                return Response({'message': 'Пользователь с таким email уже существует'}, 
+                              status=status.HTTP_409_CONFLICT)
+            
+            # Создаем пользователя
+            user = User.objects.create(
+                email=email,
+                first_name=username,  # Используем username как first_name
+            )
+            user.set_password(password)
+            
+            # Обрабатываем загрузку изображения профиля, если оно есть
+            profile_image = request.FILES.get('profile_image')
+            if profile_image:
+                user.photo = profile_image
+            
+            user.save()
+            
+            # Генерируем токен для нового пользователя
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'token': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'fullName': user.get_full_name(),
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            print(f"Ошибка регистрации: {str(e)}")
+            return Response({'message': f'Ошибка регистрации: {str(e)}'}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)

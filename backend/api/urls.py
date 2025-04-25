@@ -9,11 +9,12 @@ from .views import (
     SwipeListCreateView, SwipeDetailView,
     ChatListCreateView, ChatDetailView,
     create_swipe, assign_badge, TelegramLinkView,
-    LoginView
+    LoginView, RegisterView  # Добавим новый импорт
 )
 
 urlpatterns = [
     path('auth/login', LoginView.as_view(), name='login'),
+    path('auth/register', RegisterView.as_view(), name='register'),  # Новый маршрут
     path('profile/', UserProfileView.as_view()),
     path('badges/', BadgeListCreateView.as_view()),
     path('badges/<int:pk>/', BadgeDetailView.as_view()),

@@ -53,10 +53,11 @@ export class AuthService {
       );
   }
 
-  register(userData: any): Observable<AuthResponse> {
+  register(userData: FormData): Observable<AuthResponse> {
     // Очищаем существующие токены перед регистрацией
     this.clearAuthData();
     
+    // Не устанавливаем 'Content-Type' для FormData, браузер сам добавит правильный заголовок с boundary
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, userData)
       .pipe(
         tap(response => this.handleAuthentication(response))
@@ -83,27 +84,23 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
+  // Добавим метод для обработки ответа аутентификации
   private handleAuthentication(response: AuthResponse): void {
     if (response && response.token) {
-      console.log('Получен токен авторизации');
+      // Сохраняем токен в локальном хранилище
       localStorage.setItem(this.tokenKey, response.token);
-      localStorage.setItem(this.userKey, JSON.stringify(response.user));
-      this.currentUserSubject.next(response.user);
-    } else {
-      console.error('Ошибка в формате ответа авторизации:', response);
+      
+      // Сохраняем данные пользователя
+      if (response.user) {
+        localStorage.setItem(this.userKey, JSON.stringify(response.user));
+        this.currentUserSubject.next(response.user);
+      }
     }
   }
 
+  // Метод для получения пользователя из хранилища
   private getUserFromStorage(): User | null {
-    const userData = localStorage.getItem(this.userKey);
-    if (userData) {
-      try {
-        return JSON.parse(userData) as User;
-      } catch (e) {
-        console.error('Ошибка при парсинге данных пользователя:', e);
-        return null;
-      }
-    }
-    return null;
+    const userJson = localStorage.getItem(this.userKey);
+    return userJson ? JSON.parse(userJson) : null;
   }
 }
