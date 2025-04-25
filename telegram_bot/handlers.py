@@ -5,24 +5,48 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from chat_utils import create_group_for_event, add_user_to_group, remove_group
 
-# Configure backend API URL
-API_BASE_URL = "http://127.0.0.1:8000/api"  # <-- изменено для локального запуска
+API_BASE_URL = "http://backend:8000/api"  # <-- для docker и production
 
 logger = logging.getLogger(__name__)
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /start is issued."""
     user = update.effective_user
-    await update.message.reply_html(
-        f"Hi {user.mention_html()}! I'm the Flock Events bot. I'll help you connect with event participants.\n\n"
-        f"To link your Telegram account with your FLOCK profile, press the button below or send /pair.\n\n"
-        f"Use /help to see all available commands."
-    )
-    keyboard = [[InlineKeyboardButton("Pair Telegram Account", callback_data="pair_telegram")]]
-    await update.message.reply_text(
-        "Pair your Telegram account:",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+    telegram_id = user.id
+
+    # Проверяем, привязан ли telegram_id к пользователю
+    is_linked = False
+    try:
+        resp = requests.get(f"{API_BASE_URL}/users/by-telegram-id/{telegram_id}/", timeout=5)
+        if resp.status_code == 200:
+            # Проверяем, что найденный пользователь действительно с этим telegram_id
+            data = resp.json()
+            if data.get("telegram_username") == (user.username or str(user.id)):
+                is_linked = True
+            else:
+                is_linked = True  # даже если username не совпадает, главное что telegram_id есть
+    except Exception:
+        is_linked = False
+
+    if is_linked:
+        await update.message.reply_html(
+            f"Hi {user.mention_html()}! Your Telegram account is already linked to your FLOCK profile."
+        )
+        keyboard = [[InlineKeyboardButton("Unlink Telegram Account", callback_data="unlink_telegram")]]
+        await update.message.reply_text(
+            "You can unlink your Telegram account below:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    else:
+        await update.message.reply_html(
+            f"Hi {user.mention_html()}! I'm the Flock Events bot. I'll help you connect with event participants.\n\n"
+            f"To link your Telegram account with your FLOCK profile, press the button below or send /pair.\n\n"
+            f"Use /help to see all available commands."
+        )
+        keyboard = [[InlineKeyboardButton("Pair Telegram Account", callback_data="pair_telegram")]]
+        await update.message.reply_text(
+            "Pair your Telegram account:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
 
 async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message with available commands."""
@@ -66,17 +90,35 @@ async def register_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         }
 
 async def ask_email_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Ask user for email to link Telegram account."""
-    text = "Please enter the email you used to register on FLOCK.com to link your Telegram account."
     user_id = update.effective_user.id
-    # 1. Обычное сообщение (команда /pair)
+    # Проверяем, привязан ли telegram_id к пользователю
+    try:
+        resp = requests.get(f"{API_BASE_URL}/users/by-telegram-id/{user_id}/", timeout=5)
+        is_linked = resp.status_code == 200
+    except Exception:
+        is_linked = False
+
+    if is_linked:
+        # Уже привязан — показываем только кнопку отвязки
+        text = "Your Telegram account is already linked to your FLOCK profile."
+        if getattr(update, "message", None) and hasattr(update.message, "reply_text"):
+            await update.message.reply_text(text)
+        elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None):
+            await update.callback_query.message.edit_text(text)
+        keyboard = [[InlineKeyboardButton("Unlink Telegram Account", callback_data="unlink_telegram")]]
+        await update.effective_message.reply_text(
+            "You can unlink your Telegram account below:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+        context.user_data['awaiting_email'] = False
+        return
+
+    # Если не привязан — спрашиваем email
+    text = "Please enter the email you used to register on FLOCK.com to link your Telegram account."
     if getattr(update, "message", None) and hasattr(update.message, "reply_text"):
         await update.message.reply_text(text)
-    # 2. CallbackQuery (нажатие кнопки)
     elif getattr(update, "callback_query", None) and getattr(update.callback_query, "message", None):
-        # Заменяем текст и убираем клавиатуру
         await update.callback_query.message.edit_text(text)
-    # 3. Fallback
     else:
         await context.bot.send_message(chat_id=user_id, text=text)
     context.user_data['awaiting_email'] = True
@@ -209,16 +251,28 @@ async def leave_event_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text("Sorry, there was an error processing your request.")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle button presses from inline keyboards."""
     query = update.callback_query
     if not query:
         return
-        
+
     await query.answer()
     data = query.data
 
     if data == "pair_telegram":
         await ask_email_handler(update, context)
+        return
+
+    if data == "unlink_telegram":
+        # Отвязываем Telegram
+        telegram_id = update.effective_user.id
+        try:
+            resp = requests.post(f"{API_BASE_URL}/users/unlink-telegram/", json={"telegram_id": telegram_id}, timeout=5)
+            if resp.status_code == 200:
+                await query.message.edit_text("Your Telegram account has been unlinked from your FLOCK profile.")
+            else:
+                await query.message.edit_text("Failed to unlink Telegram account. Try again later.")
+        except Exception:
+            await query.message.edit_text("Failed to unlink Telegram account. Try again later.")
         return
 
     # Handle other button cases
