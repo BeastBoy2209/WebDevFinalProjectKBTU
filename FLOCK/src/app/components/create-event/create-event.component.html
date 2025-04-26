@@ -1,0 +1,44 @@
+<div class="create-event-container">
+    <h2>Создать новое мероприятие</h2>
+  
+    <form (ngSubmit)="onSubmit()" #eventForm="ngForm" class="event-form">
+      <div class="form-group">
+        <label for="topic">Тема:</label>
+        <input type="text" id="topic" name="topic" [(ngModel)]="eventData.topic" required #topic="ngModel">
+        <div *ngIf="topic.invalid && (topic.dirty || topic.touched)" class="error-message">
+          Тема обязательна.
+        </div>
+      </div>
+  
+      <div class="form-group">
+        <label for="description">Описание:</label>
+        <textarea id="description" name="description" [(ngModel)]="eventData.description"></textarea>
+      </div>
+  
+      <div class="form-group">
+        <label for="date">Дата и время:</label>
+        <input type="datetime-local" id="date" name="date" [(ngModel)]="eventData.date" required #date="ngModel">
+         <div *ngIf="date.invalid && (date.dirty || date.touched)" class="error-message">
+           Дата и время обязательны.
+         </div>
+      </div>
+  
+      <div class="form-group">
+        <label for="location">Место проведения:</label>
+        <input type="text" id="location" name="location" [(ngModel)]="eventData.location">
+      </div>
+  
+      <div class="form-actions">
+         <button type="submit" [disabled]="eventForm.invalid || isSubmitting" class="submit-button">
+           {{ isSubmitting ? 'Создание...' : 'Создать мероприятие' }}
+         </button>
+         <div *ngIf="errorMessage" class="error-message api-error">
+           {{ errorMessage }}
+         </div>
+         <div *ngIf="successMessage" class="success-message">
+           {{ successMessage }}
+         </div>
+      </div>
+    </form>
+  </div>
+  

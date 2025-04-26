@@ -15,22 +15,25 @@ export interface User {
 // Event model
 export interface Event {
   id: number;
-  title: string;
+  topic: string; // Изменено с title на topic
   description: string;
-  date: string;
+  date: string; // Оставляем string, т.к. получаем ISO строку с бэкенда
   location: string;
-  organizer: User;
+  // organizer: User; // Поле organizer отсутствует в EventSerializer бэкенда
   participants: User[];
-  max_participants?: number;
-  telegram_chat_link?: string;
+  // max_participants?: number; // Поле отсутствует в EventSerializer бэкенда
+  // telegram_chat_link?: string; // Поле отсутствует в EventSerializer бэкенда
+  chat?: number; // Добавлено поле chat (ID), если оно есть в EventSerializer
 }
 
 // Badge model
 export interface Badge {
   id: number;
   name: string;
-  description: string;
-  icon: string;
+  description: string; // Добавлено поле описания
+  icon: string;        // Добавлено поле для иконки/URL изображения
+  type?: string;       // Поле типа (опционально, если есть)
+  // ... другие поля, если они есть
 }
 
 // Swipe model

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+# Убедитесь, что Event и EventSerializer импортируются из .models и .serializers
 from .models import User, Badge, Event, Swipe, Chat
 from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer, UserProfilePictureSerializer
 from django.contrib.auth import authenticate
@@ -73,14 +74,33 @@ class BadgeDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Event CRUD
 class EventListCreateView(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    queryset = Event.objects.all().order_by('-date')
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
     permission_classes = [permissions.IsAuthenticated]
 
-class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    def perform_create(self, serializer):
+        serializer.save(organizer=self.request.user)
+
+# Представление для получения мероприятий ТЕКУЩЕГО пользователя
+class MyEventListView(generics.ListAPIView):
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Используется модель Event из .models
+        return Event.objects.filter(organizer=self.request.user).order_by('-date')
+
+# Представление для деталей, обновления и удаления мероприятия
+class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Event.objects.all() # Используется модель Event из .models
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
+    permission_classes = [permissions.IsAuthenticated]
+    # Опционально: добавить проверку прав, чтобы только организатор мог редактировать/удалять
+    # def get_permissions(self):
+    #     if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+    #         return [permissions.IsAuthenticated(), IsOrganizerOrReadOnly()] # Нужен кастомный permission IsOrganizerOrReadOnly
+    #     return [permissions.IsAuthenticated()]
+
 
 # Swipe CRUD (обычно только create и list нужны)
 class SwipeListCreateView(generics.ListCreateAPIView):

@@ -1,68 +1,57 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpErrorResponse,
-  HTTP_INTERCEPTORS // Импортируем HTTP_INTERCEPTORS
+  HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth.service'; // Убедитесь, что путь правильный
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common'; // Импорт для проверки платформы
 
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
+  private isBrowser: boolean;
 
   constructor(
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object // Инжектируем PLATFORM_ID
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId); // Проверяем, что это браузер
+  }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Не добавляем токен для запросов авторизации
-    if (request.url.includes('/auth/login') || request.url.includes('/auth/register')) {
-      console.log('JwtInterceptor: Пропуск добавления токена для URL:', request.url); // Логирование
-      return next.handle(request);
+    let token: string | null = null;
+
+    // Получаем токен только если код выполняется в браузере
+    if (this.isBrowser) {
+      token = this.authService.getToken();
     }
 
-    // Для остальных запросов добавляем токен
-    const token = this.authService.getToken();
+    // Клонируем запрос и добавляем заголовок Authorization, если токен есть
     if (token) {
-      console.log('JwtInterceptor: Добавление токена для URL:', request.url); // Логирование
       request = request.clone({
         setHeaders: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}` // Или 'JWT ' в зависимости от настроек DRF Simple JWT
         }
       });
-    } else {
-       console.log('JwtInterceptor: Токен не найден для URL:', request.url); // Логирование
     }
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Если ошибка 401 (Unauthorized) или связана с невалидным токеном
-        if (
-          error.status === 401 ||
-          (error.error &&
-           typeof error.error === 'object' &&
-           error.error.code === 'token_not_valid')
-        ) {
-          console.log('JwtInterceptor: Ошибка авторизации (401), выполняем выход'); // Логирование
-          this.authService.logout();
-          // Перенаправляем на страницу входа с помощью Router
-          this.router.navigate(['/login'], { queryParams: { sessionExpired: 'true' } });
+        // Обработка ошибки 401 (Unauthorized) - например, разлогинивание пользователя
+        if (error.status === 401 && this.isBrowser) { // Добавляем проверку на браузер
+          console.error('Unauthorized request - logging out:', error);
+          this.authService.logout(); // Вызываем метод logout из AuthService
+          // Можно добавить перенаправление на страницу логина
+          // this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url }});
         }
-        return throwError(() => error);
+        return throwError(() => error); // Передаем ошибку дальше
       })
     );
   }
 }
-
-// Добавляем провайдер для регистрации интерцептора
-export const jwtInterceptorProvider = {
-  provide: HTTP_INTERCEPTORS,
-  useClass: JwtInterceptor,
-  multi: true
-};

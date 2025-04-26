@@ -6,7 +6,7 @@ from .views import (
     UserProfileView,
     UserProfilePictureView,
     BadgeListCreateView, BadgeDetailView,
-    EventListCreateView, EventDetailView,
+    EventListCreateView, EventDetailView, MyEventListView, # Добавляем MyEventListView
     SwipeListCreateView, SwipeDetailView,
     ChatListCreateView, ChatDetailView,
     create_swipe, assign_badge, TelegramLinkView,
@@ -19,12 +19,12 @@ urlpatterns = [
     # Обновленные пути для работы с профилем пользователя
     path('users/profile/', UserProfileView.as_view(), name='user-profile'),
     path('users/profile/picture/', UserProfilePictureView.as_view(), name='user-profile-picture'),
-    # ...existing code...
     path('profile/', UserProfileView.as_view()),  # Оставляем старый путь для совместимости
     path('badges/', BadgeListCreateView.as_view()),
     path('badges/<int:pk>/', BadgeDetailView.as_view()),
-    path('events/', EventListCreateView.as_view()),
-    path('events/<int:pk>/', EventDetailView.as_view()),
+    path('events/', EventListCreateView.as_view()), # Для получения всех и создания новых
+    path('events/my/', MyEventListView.as_view(), name='my-events'), # НОВЫЙ путь для мероприятий пользователя
+    path('events/<int:pk>/', EventDetailView.as_view()), # Для деталей/обновления/удаления
     path('swipes/', SwipeListCreateView.as_view()),
     path('swipes/<int:pk>/', SwipeDetailView.as_view()),
     path('chats/', ChatListCreateView.as_view()),

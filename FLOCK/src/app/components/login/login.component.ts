@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http'; // Импортируем HttpErrorResponse
 
 @Component({
   selector: 'app-login',
@@ -113,34 +113,30 @@ export class LoginComponent implements OnInit {
             this.loading = false;
           }
         },
-        error: (error) => {
+        error: (error: HttpErrorResponse) => { // Используем HttpErrorResponse
           console.error('Ошибка входа:', error);
-          
+          this.loading = false; // Устанавливаем loading в false
+
           if (error.status === 401) {
-            this.errorMessage = 'Неверный email или пароль';
+            // Используем сообщение от сервера, если оно есть, иначе стандартное
+            this.errorMessage = error.error?.message || error.error?.detail || 'Неверный email или пароль';
           } else if (error.status === 404) {
-            console.error('URL не найден. Проверьте настройки API.');
-            this.errorMessage = 'Ошибка сервера: API авторизации недоступен';
-            
-            // Логируем путь для отладки
-            console.log('Проблемный URL:', error.url);
-          } else if (error.status === 0) {
-            this.errorMessage = 'Ошибка соединения с сервером. Проверьте подключение к интернету.';
-          } else if (error.status === 500) {
-            this.errorMessage = 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.';
+            this.errorMessage = 'Ошибка: Сервис авторизации не найден (404).';
+          } else if (error.status === 0 || error.status >= 500) {
+            this.errorMessage = 'Ошибка соединения с сервером. Пожалуйста, попробуйте позже.';
           } else if (error.error && typeof error.error === 'object') {
-            if (error.error.message) {
-              this.errorMessage = error.error.message;
-            } else if (error.error.detail) {
-              this.errorMessage = error.error.detail;
-            } else {
-              this.errorMessage = 'Ошибка входа. Пожалуйста, проверьте ваши данные.';
-            }
-          } else {
-            this.errorMessage = 'Ошибка входа. Пожалуйста, проверьте ваши данные.';
+              // Попытка извлечь сообщение из объекта ошибки
+              this.errorMessage = error.error.message || error.error.detail || `Ошибка (${error.status})`;
+          } else if (typeof error.error === 'string') {
+              this.errorMessage = error.error;
           }
-          
-          this.loading = false;
+           else {
+            this.errorMessage = `Произошла неизвестная ошибка (${error.status}).`;
+          }
+        },
+        complete: () => {
+            // Можно убрать, т.к. loading сбрасывается в next и error
+            // this.loading = false;
         }
       });
     } catch (e) {

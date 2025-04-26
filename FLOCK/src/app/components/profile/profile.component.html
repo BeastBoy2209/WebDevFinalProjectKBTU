@@ -1,6 +1,6 @@
 <div class="profile-container">
   <div class="profile-card">
-    <h1 class="profile-title">Профиль</h1>
+    <h1 class="profile-title">Profile</h1>
 
     <div *ngIf="loading" class="loader">
       <div class="spinner"></div>
@@ -34,14 +34,14 @@
           
           <!-- Изменено: использование isBrowser && document только если они доступны -->
           <button class="btn btn-outlined" (click)="isBrowser && document?.getElementById('profile-photo-input')?.click()">
-            Выбрать фото
+            Choose Photo
           </button>
 
           <button 
             class="btn btn-primary" 
             [disabled]="!selectedFile" 
             (click)="uploadProfilePicture()">
-            Обновить фото
+            Update Photo
           </button>
         </div>
       </div>
@@ -51,12 +51,12 @@
         <!-- Режим просмотра -->
         <div *ngIf="!isEditing" class="view-mode">
           <div class="detail-row">
-            <span class="label">Имя:</span>
+            <span class="label">Name:</span>
             <span class="value">{{ user.first_name }}</span>
           </div>
           
           <div class="detail-row">
-            <span class="label">Фамилия:</span>
+            <span class="label">Second Name:</span>
             <span class="value">{{ user.last_name || 'Не указана' }}</span>
           </div>
           
@@ -66,12 +66,12 @@
           </div>
           
           <div class="detail-row">
-            <span class="label">Возраст:</span>
+            <span class="label">Age:</span>
             <span class="value">{{ user.age || 'Не указан' }}</span>
           </div>
           
           <div class="detail-row bio-row">
-            <span class="label">О себе:</span>
+            <span class="label">About:</span>
             <span class="value">{{ user.bio || 'Нет информации' }}</span>
           </div>
 
@@ -81,26 +81,26 @@
           </div>
           
           <button class="btn btn-primary edit-btn" (click)="toggleEdit()">
-            Редактировать профиль
+            Edit Profile
           </button>
         </div>
 
         <!-- Режим редактирования -->
         <form *ngIf="isEditing" [formGroup]="profileForm" (submit)="onSubmit()" class="edit-mode">
           <div class="form-group">
-            <label for="first_name">Имя*</label>
+            <label for="first_name">Name*</label>
             <input 
               type="text" 
               id="first_name" 
               formControlName="first_name" 
               class="form-control">
             <div *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error-text">
-              Имя обязательно для заполнения
+              Required to fill out
             </div>
           </div>
           
           <div class="form-group">
-            <label for="last_name">Фамилия</label>
+            <label for="last_name">Second Name</label>
             <input 
               type="text" 
               id="last_name" 
@@ -109,19 +109,19 @@
           </div>
           
           <div class="form-group">
-            <label for="age">Возраст</label>
+            <label for="age">Age</label>
             <input 
               type="number" 
               id="age" 
               formControlName="age" 
               class="form-control">
             <div *ngIf="profileForm.get('age')?.invalid && profileForm.get('age')?.touched" class="error-text">
-              Возраст должен быть от 18 до 100 лет
+              Age should be from 18 to 100
             </div>
           </div>
           
           <div class="form-group">
-            <label for="bio">О себе</label>
+            <label for="bio">About</label>
             <textarea 
               id="bio" 
               formControlName="bio" 
@@ -131,13 +131,13 @@
           
           <div class="form-actions">
             <button type="button" class="btn btn-outlined" (click)="toggleEdit()">
-              Отмена
+              Cancel
             </button>
             <button 
               type="submit" 
               class="btn btn-primary" 
               [disabled]="profileForm.invalid || loading">
-              Сохранить
+              Save
             </button>
           </div>
         </form>
