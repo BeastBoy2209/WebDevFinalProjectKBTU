@@ -1,1 +1,147 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-card">
+    <h1 class="profile-title">Profile</h1>
+
+    <div *ngIf="loading" class="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+
+    <div *ngIf="user && !loading" class="profile-content">
+      <!-- Фото профиля -->
+      <div class="profile-photo-section">
+        <div class="profile-photo-container">
+          <img 
+            [src]="imagePreview || user.photo || '/assets/default-avatar.png'" 
+            alt="Фото профиля" 
+            class="profile-photo" />
+        </div>
+        
+        <div class="photo-actions">
+          <input 
+            type="file" 
+            id="profile-photo-input" 
+            accept="image/*" 
+            (change)="onFileSelected($event)" 
+            style="display: none;">
+          
+          <!-- Изменено: использование isBrowser && document только если они доступны -->
+          <button class="btn btn-outlined" (click)="isBrowser && document?.getElementById('profile-photo-input')?.click()">
+            Choose Photo
+          </button>
+
+          <button 
+            class="btn btn-primary" 
+            [disabled]="!selectedFile" 
+            (click)="uploadProfilePicture()">
+            Update Photo
+          </button>
+        </div>
+      </div>
+
+      <!-- Информация профиля -->
+      <div class="profile-details">
+        <!-- Режим просмотра -->
+        <div *ngIf="!isEditing" class="view-mode">
+          <div class="detail-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ user.first_name }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Second Name:</span>
+            <span class="value">{{ user.last_name || 'Не указана' }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ user.email }}</span>
+          </div>
+          
+          <div class="detail-row">
+            <span class="label">Age:</span>
+            <span class="value">{{ user.age || 'Не указан' }}</span>
+          </div>
+          
+          <div class="detail-row bio-row">
+            <span class="label">About:</span>
+            <span class="value">{{ user.bio || 'Нет информации' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Telegram:</span>
+            <span class="value">{{ user.telegram_username || 'Не привязан' }}</span>
+          </div>
+          
+          <button class="btn btn-primary edit-btn" (click)="toggleEdit()">
+            Edit Profile
+          </button>
+        </div>
+
+        <!-- Режим редактирования -->
+        <form *ngIf="isEditing" [formGroup]="profileForm" (submit)="onSubmit()" class="edit-mode">
+          <div class="form-group">
+            <label for="first_name">Name*</label>
+            <input 
+              type="text" 
+              id="first_name" 
+              formControlName="first_name" 
+              class="form-control">
+            <div *ngIf="profileForm.get('first_name')?.invalid && profileForm.get('first_name')?.touched" class="error-text">
+              Required to fill out
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="last_name">Second Name</label>
+            <input 
+              type="text" 
+              id="last_name" 
+              formControlName="last_name" 
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input 
+              type="number" 
+              id="age" 
+              formControlName="age" 
+              class="form-control">
+            <div *ngIf="profileForm.get('age')?.invalid && profileForm.get('age')?.touched" class="error-text">
+              Age should be from 18 to 100
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="bio">About</label>
+            <textarea 
+              id="bio" 
+              formControlName="bio" 
+              class="form-control bio-textarea"
+              rows="4"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn btn-outlined" (click)="toggleEdit()">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary" 
+              [disabled]="profileForm.invalid || loading">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

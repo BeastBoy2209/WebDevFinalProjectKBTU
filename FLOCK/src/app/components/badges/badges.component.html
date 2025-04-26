@@ -1,1 +1,30 @@
-<p>badges works!</p>
+<div class="badges-container">
+  <h2>Доступные значки</h2>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    Загрузка значков...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="badges-grid">
+    <div *ngFor="let badge of badges" class="badge-card">
+      <div class="badge-icon">
+        <!-- Предполагаем, что поле icon содержит URL или класс иконки -->
+        <img [src]="badge.icon" [alt]="badge.name" *ngIf="badge.icon && badge.icon.startsWith('http')">
+        <i [class]="badge.icon" *ngIf="badge.icon && !badge.icon.startsWith('http')"></i>
+        <!-- Запасной вариант, если иконки нет -->
+        <span *ngIf="!badge.icon" class="placeholder-icon">?</span>
+      </div>
+      <div class="badge-info">
+        <h3>{{ badge.name }}</h3>
+        <p>{{ badge.description }}</p>
+      </div>
+    </div>
+     <div *ngIf="!isLoading && !error && badges.length === 0" class="no-badges">
+       Пока нет доступных значков.
+     </div>
+  </div>
+</div>

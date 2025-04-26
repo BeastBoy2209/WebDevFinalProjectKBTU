@@ -1,8 +1,8 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <h1>Создайте аккаунт</h1>
-      <p>Присоединяйтесь к FLOCK, чтобы находить интересные мероприятия</p>
+      <h1>Create Account</h1>
+      <p>Join FLOCK to find interesting events</p>
     </div>
     
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -15,21 +15,21 @@
             </svg>
           </span>
         </div>
-        <label for="profileImage" class="upload-btn">Загрузить фото</label>
+        <label for="profileImage" class="upload-btn">Upload photo</label>
         <input type="file" id="profileImage" style="display: none;" (change)="onFileSelected($event)" accept="image/*">
       </div>
       
       <div class="form-group">
-        <label for="username">Имя пользователя</label>
+        <label for="username">Username</label>
         <input 
           type="text" 
           id="username" 
           class="form-control" 
           formControlName="username" 
-          placeholder="Введите имя пользователя">
+          placeholder="Enter username">
         <div *ngIf="registerForm.get('username')?.invalid && (registerForm.get('username')?.dirty || registerForm.get('username')?.touched)" class="error-message">
-          <div *ngIf="registerForm.get('username')?.errors?.['required']">Имя пользователя обязательно</div>
-          <div *ngIf="registerForm.get('username')?.errors?.['minlength']">Имя пользователя должно содержать не менее 4 символов</div>
+          <div *ngIf="registerForm.get('username')?.errors?.['required']">Username is required</div>
+          <div *ngIf="registerForm.get('username')?.errors?.['minlength']">Username must be at least 4 characters long</div>
         </div>
       </div>
       
@@ -40,38 +40,38 @@
           id="email" 
           class="form-control" 
           formControlName="email" 
-          placeholder="Введите ваш email">
+          placeholder="Enter your email">
         <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.dirty || registerForm.get('email')?.touched)" class="error-message">
-          <div *ngIf="registerForm.get('email')?.errors?.['required']">Email обязателен</div>
-          <div *ngIf="registerForm.get('email')?.errors?.['email']">Укажите корректный email</div>
+          <div *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</div>
+          <div *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email</div>
         </div>
       </div>
       
       <div class="form-group">
-        <label for="password">Пароль</label>
+        <label for="password">Password</label>
         <input 
           type="password" 
           id="password" 
           class="form-control" 
           formControlName="password" 
-          placeholder="Создайте пароль">
+          placeholder="Create a password">
         <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)" class="error-message">
-          <div *ngIf="registerForm.get('password')?.errors?.['required']">Пароль обязателен</div>
-          <div *ngIf="registerForm.get('password')?.errors?.['minlength']">Пароль должен содержать не менее 6 символов</div>
+          <div *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</div>
+          <div *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters long</div>
         </div>
       </div>
       
       <div class="form-group">
-        <label for="confirmPassword">Подтвердите пароль</label>
+        <label for="confirmPassword">Confirm Password</label>
         <input 
           type="password" 
           id="confirmPassword" 
           class="form-control" 
           formControlName="confirmPassword" 
-          placeholder="Подтвердите пароль">
+          placeholder="Confirm your password">
         <div *ngIf="registerForm.get('confirmPassword')?.invalid && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched) || registerForm.errors?.['passwordMismatch']" class="error-message">
-          <div *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Подтверждение пароля обязательно</div>
-          <div *ngIf="registerForm.errors?.['passwordMismatch']">Пароли не совпадают</div>
+          <div *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Password confirmation is required</div>
+          <div *ngIf="registerForm.errors?.['passwordMismatch']">Passwords do not match</div>
         </div>
       </div>
       
@@ -80,16 +80,16 @@
         class="btn btn-primary btn-register" 
         [disabled]="registerForm.invalid || loading">
         <span *ngIf="loading" class="spinner"></span>
-        Зарегистрироваться
+        Sign Up
       </button>
 
       <div *ngIf="errorMessage" class="error-message text-center mt-3">
-        {{ errorMessage }}
+        <div *ngFor="let line of errorMessage.split('\n')">{{ line }}</div>
       </div>
     </form>
     
     <div class="login-link">
-      Уже есть аккаунт? <a routerLink="/login">Войти</a>
+      Already have an account? <a routerLink="/login">Sign In</a>
     </div>
   </div>
 </div>

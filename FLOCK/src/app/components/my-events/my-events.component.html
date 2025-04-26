@@ -1,1 +1,39 @@
-<p>my-events works!</p>
+<div class="my-events-container">
+  <div class="header-section">
+    <h2>Мои мероприятия</h2>
+    <a routerLink="/create-event" class="create-event-button">Создать свое мероприятие</a>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    Загрузка мероприятий...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Отображение списка мероприятий -->
+  <div *ngIf="!isLoading && !error && events.length > 0" class="events-list">
+    <div *ngFor="let event of events" class="event-card">
+      <div class="event-card-header">
+        <h3>{{ event.topic }}</h3>
+        <span class="event-date">{{ event.date | date:'dd.MM.yyyy HH:mm' }}</span>
+      </div>
+      <div class="event-card-body">
+        <p class="event-location" *ngIf="event.location">Место: {{ event.location }}</p>
+        <p class="event-description">{{ event.description || 'Описание отсутствует' }}</p>
+        <!-- Можно добавить информацию об участниках, если нужно -->
+        <!-- <p>Участников: {{ event.participants?.length || 0 }}</p> -->
+      </div>
+      <div class="event-card-footer">
+        <!-- Ссылка на детали мероприятия (если есть такая страница) -->
+        <!-- <a [routerLink]="['/events', event.id]" class="details-button">Подробнее</a> -->
+        <!-- Кнопки управления (редактировать/удалить), если нужно -->
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && events.length === 0" class="no-events">
+    У вас пока нет созданных мероприятий. <a routerLink="/create-event">Создать новое?</a>
+  </div>
+</div>

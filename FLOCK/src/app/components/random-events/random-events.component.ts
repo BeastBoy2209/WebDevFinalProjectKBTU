@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-random-events',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './random-events.component.html',
-  styleUrl: './random-events.component.css'
+  styleUrls: ['./random-events.component.css']
 })
 export class RandomEventsComponent {
 

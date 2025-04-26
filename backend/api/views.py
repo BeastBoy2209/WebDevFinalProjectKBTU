@@ -4,17 +4,51 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+# Убедитесь, что Event и EventSerializer импортируются из .models и .serializers
 from .models import User, Badge, Event, Swipe, Chat
-from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer
+from .serializers import UserSerializer, BadgeSerializer, EventSerializer, SwipeSerializer, ChatSerializer, UserProfilePictureSerializer
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
+    """
+    API для получения и обновления профиля пользователя
+    GET: получить профиль текущего пользователя
+    PATCH/PUT: обновить профиль текущего пользователя
+    """
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+
+
+class UserProfilePictureView(generics.UpdateAPIView):
+    """
+    API для обновления фото профиля пользователя
+    PATCH: обновить фото профиля
+    """
+    serializer_class = UserProfilePictureSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get_object(self):
         return self.request.user
     
+    def patch(self, request, *args, **kwargs):
+        user = self.get_object()
+        
+        if 'profile_picture' not in request.FILES:
+            return Response(
+                {"error": "Необходимо загрузить файл изображения"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.photo = request.FILES['profile_picture']
+        user.save()
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
 @api_view(['GET'])
 def user_by_telegram_id(request, telegram_user_id):
     try:
@@ -40,14 +74,33 @@ class BadgeDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Event CRUD
 class EventListCreateView(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    queryset = Event.objects.all().order_by('-date')
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
     permission_classes = [permissions.IsAuthenticated]
 
-class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    def perform_create(self, serializer):
+        serializer.save(organizer=self.request.user)
+
+# Представление для получения мероприятий ТЕКУЩЕГО пользователя
+class MyEventListView(generics.ListAPIView):
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Используется модель Event из .models
+        return Event.objects.filter(organizer=self.request.user).order_by('-date')
+
+# Представление для деталей, обновления и удаления мероприятия
+class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Event.objects.all() # Используется модель Event из .models
+    serializer_class = EventSerializer # Используется EventSerializer из .serializers
+    permission_classes = [permissions.IsAuthenticated]
+    # Опционально: добавить проверку прав, чтобы только организатор мог редактировать/удалять
+    # def get_permissions(self):
+    #     if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+    #         return [permissions.IsAuthenticated(), IsOrganizerOrReadOnly()] # Нужен кастомный permission IsOrganizerOrReadOnly
+    #     return [permissions.IsAuthenticated()]
+
 
 # Swipe CRUD (обычно только create и list нужны)
 class SwipeListCreateView(generics.ListCreateAPIView):
@@ -148,3 +201,60 @@ class LoginView(APIView):
                 }
             })
         return Response({'message': 'Неверный email или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class RegisterView(APIView):
+    permission_classes = []  # Allow any - no auth required for registration
+    authentication_classes = []
+
+    def post(self, request):
+        try:
+            # Извлекаем данные из запроса
+            email = request.data.get('email')
+            username = request.data.get('username')
+            password = request.data.get('password')
+            password_confirm = request.data.get('password_confirm')
+            
+            # Базовые проверки данных
+            if not email or not username or not password:
+                return Response({'message': 'Email, имя пользователя и пароль обязательны'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            if password != password_confirm:
+                return Response({'message': 'Пароли не совпадают'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+            
+            # Проверяем существование email
+            if User.objects.filter(email=email).exists():
+                return Response({'message': 'Пользователь с таким email уже существует'}, 
+                              status=status.HTTP_409_CONFLICT)
+            
+            # Создаем пользователя
+            user = User.objects.create(
+                email=email,
+                first_name=username,  # Используем username как first_name
+            )
+            user.set_password(password)
+            
+            # Обрабатываем загрузку изображения профиля, если оно есть
+            profile_image = request.FILES.get('profile_image')
+            if profile_image:
+                user.photo = profile_image
+            
+            user.save()
+            
+            # Генерируем токен для нового пользователя
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'token': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'fullName': user.get_full_name(),
+                }
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            print(f"Ошибка регистрации: {str(e)}")
+            return Response({'message': f'Ошибка регистрации: {str(e)}'}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)

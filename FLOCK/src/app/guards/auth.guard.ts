@@ -1,30 +1,35 @@
-import { Injectable } from '@angular/core';
-import { 
-  CanActivate, 
-  ActivatedRouteSnapshot, 
-  RouterStateSnapshot, 
-  Router 
-} from '@angular/router';
+import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard implements CanActivate {
-  
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+export class AuthGuard {
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private isBrowser: boolean;
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    // Use method call, not property
-    if (this.authService.isAuthenticated()) {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    // При SSR всегда предоставляем доступ, проверка будет происходить на клиенте
+    if (!this.isBrowser) {
       return true;
     }
     
-    // Not authenticated, redirect to login
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url }});
-    return false;
+    const isAuth = this.authService.isAuthenticated();
+    
+    if (!isAuth) {
+      return this.router.createUrlTree(['/login']);
+    }
+    
+    return true;
   }
 }

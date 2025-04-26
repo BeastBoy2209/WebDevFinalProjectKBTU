@@ -107,3 +107,8 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'api.backends.EmailBackend', 
+    'django.contrib.auth.backends.ModelBackend',
+]

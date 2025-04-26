@@ -1,6 +1,6 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -29,11 +29,27 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, blank=True)
-    age = models.PositiveIntegerField(null=True, blank=True)
-    telegram_username = models.CharField(max_length=64, blank=True)
-    photo = models.ImageField(upload_to='user_photos/', blank=True, null=True)
-    bio = models.TextField(blank=True)
-    badges = models.ManyToManyField('Badge', related_name='users', blank=True)
+    bio = models.TextField(blank=True, null=True)
+    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    telegram_username = models.CharField(max_length=100, blank=True, null=True)
+    telegram_user_id = models.CharField(max_length=100, blank=True, null=True, unique=True, db_index=True)
+    badges = models.ManyToManyField('Badge', blank=True, related_name='users')
+    age = models.PositiveIntegerField(blank=True, null=True) # Добавлено поле age
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='api_user_set', # Изменено related_name
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='api_user_set_permissions', # Изменено related_name
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
@@ -42,37 +58,65 @@ class User(AbstractUser):
         return self.email
 
 class Badge(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.TextField()
-    type = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    type = models.CharField(max_length=50) # Например, 'participation', 'creation', 'social'
+    icon = models.CharField(max_length=255, blank=True, null=True) # URL или класс иконки
 
     def __str__(self):
         return self.name
 
+# --- ДОБАВЛЯЕМ МОДЕЛЬ EVENT ---
+
+
 class Event(models.Model):
-    topic = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    topic = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
     date = models.DateTimeField()
-    location = models.CharField(max_length=255, blank=True)
-    participants = models.ManyToManyField(User, related_name='events', blank=True)
-    chat = models.OneToOneField('Chat', on_delete=models.SET_NULL, null=True, blank=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='organized_events',
+        on_delete=models.CASCADE,
+        null=True, # Разрешить NULL в базе данных
+        blank=True # Разрешить пустое значение в формах/админке (обычно идет вместе с null=True для ForeignKey)
+    )
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='participated_events',
+        blank=True
+    )
+    telegram_group_id = models.CharField(max_length=100, blank=True, null=True)
+    telegram_group_active = models.BooleanField(default=False)
+    end_time = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.topic} ({self.date})"
+        return self.topic
+# --- КОНЕЦ МОДЕЛИ EVENT ---
 
 class Swipe(models.Model):
-    from_user = models.ForeignKey(User, related_name='swipes_sent', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, related_name='swipes_received', on_delete=models.CASCADE)
-    result = models.BooleanField()  # True - like, False - dislike
+    from_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='swipes_made', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='swipes_received', on_delete=models.CASCADE)
+    result = models.CharField(max_length=10, choices=[('like', 'Like'), ('dislike', 'Dislike')]) # like/dislike
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
 
     def __str__(self):
         return f"{self.from_user} -> {self.to_user}: {'like' if self.result else 'dislike'}"
 
 class Chat(models.Model):
-    users = models.ManyToManyField(User, related_name='chats')
-    telegram_chat_id = models.CharField(max_length=100, unique=True)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chats')
+    telegram_chat_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    event = models.OneToOneField(Event, on_delete=models.SET_NULL, null=True, blank=True, related_name='chat') # Связь с Event
 
     def __str__(self):
-        return f"Chat {self.telegram_chat_id}"
+        if self.event:
+            return f"Chat for Event: {self.event.topic}"
+        elif self.telegram_chat_id:
+            return f"Telegram Chat ID: {self.telegram_chat_id}"
+        else:
+            user_list = ", ".join([user.username for user in self.users.all()])
+            return f"Chat between: {user_list}"

@@ -1,0 +1,33 @@
+<header class="main-header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a routerLink="/">
+          <span class="logo-text">FLOCK</span>
+        </a>
+      </div>
+      
+      <nav class="main-nav">
+        <ul class="nav-links">
+          <li><a routerLink="/swipe" routerLinkActive="active">Discover</a></li>
+          <li><a routerLink="/my-events" routerLinkActive="active">My Events</a></li>
+          <li><a routerLink="/random-events" routerLinkActive="active">Random Events</a></li>
+          <li><a routerLink="/badges" routerLinkActive="active">Badges</a></li>
+        </ul>
+      </nav>
+      
+      <div class="auth-actions">
+        <!-- Замените проверку authService.isAuthenticated() на isBrowser && authService.isAuthenticated() -->
+        <div *ngIf="isBrowser && authService.isAuthenticated()">
+          <a routerLink="/profile" class="auth-btn profile-btn">Profile</a>
+          <button class="auth-btn logout-btn" (click)="logout()">Sign Out</button>
+        </div>
+
+        <div *ngIf="!(isBrowser && authService.isAuthenticated())">
+          <a routerLink="/login" class="auth-btn login-btn">Sign In</a>
+          <a routerLink="/register" class="auth-btn register-btn">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

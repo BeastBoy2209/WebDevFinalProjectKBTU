@@ -1,77 +1,83 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-
-// Define interfaces for type safety
-export interface User {
-  id: number;
-  email: string;
-  fullName?: string;
-  profileImage?: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
+import { isPlatformBrowser } from '@angular/common';
+import { AuthResponse } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject: BehaviorSubject<User | null>;
-  public currentUser: Observable<User | null>;
-  private tokenKey = 'auth_token';
-  private userKey = 'user_data';
+  private currentUserSubject = new BehaviorSubject<any>(null);
+  public currentUser = this.currentUserSubject.asObservable();
+  
   private apiUrl = environment.apiUrl;
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient) {
-    this.currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
-    this.currentUser = this.currentUserSubject.asObservable();
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.loadStoredUser();
+    }
   }
 
-  public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
+  private loadStoredUser() {
+    if (this.isBrowser) {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedToken && storedUser) {
+        try {
+          this.currentUserSubject.next(JSON.parse(storedUser));
+        } catch (error) {
+          console.error('Ошибка при загрузке данных пользователя', error);
+          this.logout();
+        }
+      }
+    }
   }
 
-  // Обновленный метод логина с корректным URL (без завершающего слеша)
-  login(email: string, password: string): Observable<AuthResponse> {
-    // Очищаем существующие токены перед логином
-    this.clearAuthData();
-    
-    // Добавляем заголовки для решения проблем CORS
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    });
-
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password }, { headers })
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
-        tap(response => this.handleAuthentication(response))
+        tap(response => {
+          if (response && response.token && this.isBrowser) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('currentUser', JSON.stringify(response.user));
+            this.currentUserSubject.next(response.user);
+            console.log('Токен сохранен:', response.token);
+          }
+        })
       );
   }
 
-  register(userData: any): Observable<AuthResponse> {
-    // Очищаем существующие токены перед регистрацией
-    this.clearAuthData();
-    
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, userData)
-      .pipe(
-        tap(response => this.handleAuthentication(response))
-      );
+  register(formData: FormData): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, formData).pipe(
+      tap(response => {
+        if (response && response.token && this.isBrowser) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('currentUser', JSON.stringify(response.user));
+          this.currentUserSubject.next(response.user);
+          console.log('Токен сохранен после регистрации:', response.token);
+        }
+      })
+    );
   }
 
-  logout(): void {
-    this.clearAuthData();
-  }
-
-  // Метод для очистки данных авторизации
-  private clearAuthData(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
+  logout() {
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+    }
     this.currentUserSubject.next(null);
+  }
+
+  getToken(): string | null {
+    return this.isBrowser ? localStorage.getItem('token') : null;
   }
 
   isAuthenticated(): boolean {
@@ -79,31 +85,11 @@ export class AuthService {
     return !!token;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+  getCurrentUser(): any {
+    return this.currentUserSubject.value;
   }
 
-  private handleAuthentication(response: AuthResponse): void {
-    if (response && response.token) {
-      console.log('Получен токен авторизации');
-      localStorage.setItem(this.tokenKey, response.token);
-      localStorage.setItem(this.userKey, JSON.stringify(response.user));
-      this.currentUserSubject.next(response.user);
-    } else {
-      console.error('Ошибка в формате ответа авторизации:', response);
-    }
-  }
-
-  private getUserFromStorage(): User | null {
-    const userData = localStorage.getItem(this.userKey);
-    if (userData) {
-      try {
-        return JSON.parse(userData) as User;
-      } catch (e) {
-        console.error('Ошибка при парсинге данных пользователя:', e);
-        return null;
-      }
-    }
-    return null;
+  isLoggedIn(): boolean {
+    return this.isAuthenticated();
   }
 }

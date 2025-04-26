@@ -1,0 +1,88 @@
+.badges-container {
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.badges-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.loading-indicator,
+.error-message,
+.no-badges {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error-message {
+  color: #d9534f; /* Красный цвет для ошибок */
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Адаптивная сетка */
+  gap: 20px; /* Отступы между карточками */
+}
+
+.badge-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.badge-card:hover {
+  transform: translateY(-5px); /* Небольшой подъем при наведении */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.badge-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0; /* Цвет фона для иконки */
+  border-radius: 50%; /* Круглая иконка */
+  overflow: hidden; /* Обрезка изображения, если оно не круглое */
+}
+
+.badge-icon img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover; /* Масштабирование изображения */
+}
+
+.badge-icon i {
+  font-size: 40px; /* Размер для иконочных шрифтов */
+  color: #555;
+}
+
+.placeholder-icon {
+    font-size: 40px;
+    color: #aaa;
+    font-weight: bold;
+}
+
+
+.badge-info h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.badge-info p {
+  font-size: 0.9em;
+  color: #666;
+  line-height: 1.4;
+}

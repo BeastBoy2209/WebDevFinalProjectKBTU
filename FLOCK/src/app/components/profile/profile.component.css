@@ -1,0 +1,237 @@
+.profile-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+  background-color: #f5f7fa;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.profile-title {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Секция фото профиля */
+.profile-photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.profile-photo-container {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 3px solid #e0e0e0;
+}
+
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Детали профиля */
+.profile-details {
+  flex: 1;
+}
+
+.detail-row {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.value {
+  color: #333;
+  font-size: 1rem;
+}
+
+.bio-row .value {
+  white-space: pre-line;
+}
+
+/* Форма редактирования */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  border-color: #5c6bc0;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
+}
+
+.bio-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Кнопки */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #5c6bc0;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #4a5aba;
+}
+
+.btn-primary:disabled {
+  background-color: #b0bec5;
+  cursor: not-allowed;
+}
+
+.btn-outlined {
+  background-color: transparent;
+  border: 1px solid #5c6bc0;
+  color: #5c6bc0;
+}
+
+.btn-outlined:hover {
+  background-color: rgba(92, 107, 192, 0.1);
+}
+
+.edit-btn {
+  margin-top: 1rem;
+}
+
+/* Сообщения */
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.error-text {
+  color: #c62828;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+}
+
+/* Загрузчик */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #5c6bc0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (min-width: 768px) {
+  .profile-content {
+    flex-direction: row;
+  }
+  
+  .profile-photo-section {
+    margin-right: 2rem;
+    margin-bottom: 0;
+  }
+  
+  .profile-details {
+    flex: 1;
+  }
+  
+  .detail-row {
+    flex-direction: row;
+    align-items: baseline;
+  }
+  
+  .label {
+    width: 120px;
+    margin-bottom: 0;
+  }
+}
