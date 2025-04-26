@@ -12,7 +12,7 @@ export class EventsService {
 
   // Получение всех доступных мероприятий
   getRandomEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(`${environment.apiUrl}/events/random/`);
+    return this.http.get<Event[]>(`${environment.apiUrl}/events/`);
   }
 
   // Получение мероприятий пользователя
@@ -38,5 +38,10 @@ export class EventsService {
   // Создание нового мероприятия
   createEvent(eventData: Partial<Event>): Observable<Event> {
     return this.http.post<Event>(`${environment.apiUrl}/events/`, eventData);
+  }
+
+  // Удаление мероприятия
+  deleteEvent(eventId: number): Observable<void> { // Expect no content on successful delete (204)
+    return this.http.delete<void>(`${environment.apiUrl}/events/${eventId}/`);
   }
 }

@@ -15,6 +15,7 @@ export class MyEventsComponent implements OnInit {
   events: Event[] = []; // Добавляем свойство для хранения мероприятий
   isLoading: boolean = true; // Добавляем флаг загрузки
   error: string | null = null; // Добавляем свойство для хранения ошибки
+  deletingEventId: number | null = null; // Track which event is being deleted
 
   constructor(private eventsService: EventsService) {}
 
@@ -32,11 +33,35 @@ export class MyEventsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching user events:', err);
-        this.error = 'Не удалось загрузить ваши мероприятия. Попробуйте позже.'; // Устанавливаем сообщение об ошибке
+        this.error = 'Could not upload your events. Try again later.'; // Устанавливаем сообщение об ошибке
         this.isLoading = false; // Снимаем флаг загрузки
       }
     });
   }
 
-  // Можно добавить другие методы, если они нужны
+  // Method to handle event deletion
+  deleteEvent(eventId: number | undefined): void {
+    if (eventId === undefined) {
+      console.error('Cannot delete event: Event ID is undefined.');
+      return;
+    }
+
+    this.deletingEventId = eventId; // Mark event as being deleted (for UI feedback)
+    this.error = null; // Clear previous errors
+
+    this.eventsService.deleteEvent(eventId).subscribe({
+      next: () => {
+        // Remove the event from the local array on successful deletion
+        this.events = this.events.filter(event => event.id !== eventId);
+        this.deletingEventId = null; // Reset deleting state
+        console.log(`Event ${eventId} deleted successfully.`);
+        // Optional: Add a success message/toast notification
+      },
+      error: (err) => {
+        console.error(`Error deleting event ${eventId}:`, err);
+        this.error = `Could not delete event ${eventId}. Please try again.`;
+        this.deletingEventId = null; // Reset deleting state even on error
+      }
+    });
+  }
 }

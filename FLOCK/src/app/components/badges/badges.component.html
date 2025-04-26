@@ -1,8 +1,8 @@
 <div class="badges-container">
-  <h2>Доступные значки</h2>
+  <h2>Available badges</h2>
 
   <div *ngIf="isLoading" class="loading-indicator">
-    Загрузка значков...
+    Loading badges..
   </div>
 
   <div *ngIf="error" class="error-message">
@@ -24,7 +24,7 @@
       </div>
     </div>
      <div *ngIf="!isLoading && !error && badges.length === 0" class="no-badges">
-       Пока нет доступных значков.
+      There are no badges available yet.
      </div>
   </div>
 </div>

@@ -1,1 +1,35 @@
-<p>random-events works!</p>
+<div class="events-container">
+  <h2>Upcoming Events</h2>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    Loading events...
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Events Grid (only show if not loading, no error, and events exist) -->
+  <div *ngIf="!isLoading && !error && events.length > 0" class="events-grid">
+    <div *ngFor="let event of events" class="event-card">
+      <div class="event-card-header">
+        <h3>{{ event.topic }}</h3>
+        <span class="event-date">{{ event.date | date:'dd.MM.yyyy HH:mm' }}</span>
+      </div>
+      <div class="event-card-body">
+        <p class="event-location" *ngIf="event.location">Place: {{ event.location }}</p>
+        <p class="event-description">{{ event.description }}</p>
+      </div>
+      <div class="event-card-footer">
+      </div>
+    </div>
+  </div>
+
+  <!-- No Events Message -->
+  <div *ngIf="!isLoading && !error && events.length === 0" class="no-events">
+    No events found at the moment. Check back later!
+  </div>
+
+</div>

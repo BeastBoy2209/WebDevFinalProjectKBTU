@@ -1,1 +1,41 @@
-<p>swipe works!</p>
+<div class="swipe-container">
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <p>Loading profiles...</p>
+    <!-- Add a spinner or animation here if desired -->
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="error-message">
+    <p>{{ errorMessage }}</p>
+    <button (click)="loadUsers()">Retry</button>
+  </div>
+
+  <!-- User Card and Actions (only show if not loading and no error) -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <ng-container *ngIf="currentUser; else noMoreProfiles">
+      <div class="card">
+        <!-- Используем currentUser.photo. Добавьте || 'путь/к/умолчанию.png', если нужно -->
+        <img [src]="currentUser.photo" [alt]="currentUser.first_name" class="card-image">
+        <div class="card-info">
+          <!-- Используем currentUser.first_name и currentUser.age -->
+          <h2>{{ currentUser.first_name }}, {{ currentUser.age }}</h2>
+          <!-- Используем currentUser.bio -->
+          <p>{{ currentUser.bio }}</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="dislike-button" (click)="dislike()">❌</button>
+        <button class="like-button" (click)="like()">❤️</button>
+      </div>
+    </ng-container>
+
+    <!-- No More Profiles Message -->
+    <ng-template #noMoreProfiles>
+      <div class="no-profiles">
+        <h2>No more profiles</h2>
+        <p>Check back later!</p>
+      </div>
+    </ng-template>
+  </ng-container>
+</div>

@@ -17,6 +17,7 @@ export class RegisterComponent implements OnInit {
   loading = false;
   errorMessage = '';
   selectedFile: File | null = null;
+  imagePreview: string | null = null; // Add the missing imagePreview property
 
   constructor(
     private fb: FormBuilder,
@@ -47,8 +48,16 @@ export class RegisterComponent implements OnInit {
     if (fileList && fileList.length > 0) {
       this.selectedFile = fileList[0];
       this.registerForm.patchValue({ profile_image: this.selectedFile }); // Обновляем значение в форме
+      
+      // Create and set image preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
     } else {
       this.selectedFile = null;
+      this.imagePreview = null;
       this.registerForm.patchValue({ profile_image: null });
     }
   }

@@ -1,36 +1,36 @@
 <div class="create-event-container">
-    <h2>Создать новое мероприятие</h2>
+    <h2>Create a new event</h2>
   
     <form (ngSubmit)="onSubmit()" #eventForm="ngForm" class="event-form">
       <div class="form-group">
-        <label for="topic">Тема:</label>
+        <label for="topic">Topic:</label>
         <input type="text" id="topic" name="topic" [(ngModel)]="eventData.topic" required #topic="ngModel">
         <div *ngIf="topic.invalid && (topic.dirty || topic.touched)" class="error-message">
-          Тема обязательна.
+          The subject is required.
         </div>
       </div>
   
       <div class="form-group">
-        <label for="description">Описание:</label>
+        <label for="description">Description:</label>
         <textarea id="description" name="description" [(ngModel)]="eventData.description"></textarea>
       </div>
   
       <div class="form-group">
-        <label for="date">Дата и время:</label>
+        <label for="date">Date and time:</label>
         <input type="datetime-local" id="date" name="date" [(ngModel)]="eventData.date" required #date="ngModel">
          <div *ngIf="date.invalid && (date.dirty || date.touched)" class="error-message">
-           Дата и время обязательны.
+          Date and time are required.
          </div>
       </div>
   
       <div class="form-group">
-        <label for="location">Место проведения:</label>
+        <label for="location">Location of the event:</label>
         <input type="text" id="location" name="location" [(ngModel)]="eventData.location">
       </div>
   
       <div class="form-actions">
          <button type="submit" [disabled]="eventForm.invalid || isSubmitting" class="submit-button">
-           {{ isSubmitting ? 'Создание...' : 'Создать мероприятие' }}
+           {{ isSubmitting ? 'Creation...' : 'Create an event' }}
          </button>
          <div *ngIf="errorMessage" class="error-message api-error">
            {{ errorMessage }}

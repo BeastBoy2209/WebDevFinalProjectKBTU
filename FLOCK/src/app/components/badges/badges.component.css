@@ -1,12 +1,12 @@
 .badges-container {
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-primary); /* Apply primary font */
 }
 
 .badges-container h2 {
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--deep-midnight-blue); /* Use primary dark color */
 }
 
 .loading-indicator,
@@ -14,11 +14,11 @@
 .no-badges {
   text-align: center;
   padding: 20px;
-  color: #666;
+  color: var(--text-dark); /* Assuming #666 maps to dark text */
 }
 
 .error-message {
-  color: #d9534f; /* Красный цвет для ошибок */
+  color: var(--sunset-coral); /* Use variable for error color */
 }
 
 .badges-grid {
@@ -28,20 +28,20 @@
 }
 
 .badge-card {
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium); /* Assuming 10px maps to medium */
+  box-shadow: var(--card-shadow);
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: var(--transition-smooth);
 }
 
 .badge-card:hover {
   transform: translateY(-5px); /* Небольшой подъем при наведении */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 16px var(--shadow-color); /* Adjust shadow */
 }
 
 .badge-icon {
@@ -51,7 +51,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0; /* Цвет фона для иконки */
+  background-color: var(--soft-cream); /* Use light background */
   border-radius: 50%; /* Круглая иконка */
   overflow: hidden; /* Обрезка изображения, если оно не круглое */
 }
@@ -64,25 +64,24 @@
 
 .badge-icon i {
   font-size: 40px; /* Размер для иконочных шрифтов */
-  color: #555;
+  color: var(--text-dark); /* Assuming #555 maps to dark text */
 }
 
 .placeholder-icon {
     font-size: 40px;
-    color: #aaa;
-    font-weight: bold;
+    color: var(--text-light); /* Assuming #aaa maps to light text */
+    font-weight: var(--font-weight-bold);
 }
-
 
 .badge-info h3 {
   margin-top: 0;
   margin-bottom: 10px;
   font-size: 1.2em;
-  color: #333;
+  color: var(--deep-midnight-blue); /* Use primary dark color */
 }
 
 .badge-info p {
   font-size: 0.9em;
-  color: #666;
+  color: var(--text-dark); /* Assuming #666 maps to dark text */
   line-height: 1.4;
 }

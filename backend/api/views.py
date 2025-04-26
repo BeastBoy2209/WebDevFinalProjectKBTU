@@ -101,6 +101,23 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     #         return [permissions.IsAuthenticated(), IsOrganizerOrReadOnly()] # Нужен кастомный permission IsOrganizerOrReadOnly
     #     return [permissions.IsAuthenticated()]
 
+# НОВОЕ: Представление для получения случайных мероприятий
+class RandomEventListView(generics.ListAPIView):
+    """
+    API для получения списка случайных событий.
+    Возвращает до 5 случайных событий.
+    """
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated] # Или permissions.AllowAny, если события доступны всем
+
+    def get_queryset(self):
+        # Получаем все события и сортируем их случайным образом
+        # '?' - специфично для некоторых баз данных (PostgreSQL, MySQL, SQLite),
+        # может быть неэффективно на больших таблицах.
+        # Альтернатива: получить все ID, выбрать случайные N ID, затем запросить объекты.
+        queryset = Event.objects.order_by('?')
+        # Ограничиваем количество возвращаемых событий (например, 5)
+        return queryset[:5]
 
 # Swipe CRUD (обычно только create и list нужны)
 class SwipeListCreateView(generics.ListCreateAPIView):

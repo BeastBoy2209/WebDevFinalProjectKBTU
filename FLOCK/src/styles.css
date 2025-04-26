@@ -1,5 +1,45 @@
 /* You can add global styles to this file, and also import other style files */
 
+:root {
+  /* Color Palette */
+  --electric-lavender: #C084FC;
+  --sunset-coral: #FF5E5B;
+  --deep-midnight-blue: #1E1F3A;
+  --fresh-mint: #A0F0DC;
+  --soft-cream: #FDF6EC;
+  
+  /* Neutral Colors */
+  --white: #ffffff;
+  --text-dark: #555555;
+  --text-light: #dddddd;
+  
+  /* Shadow Variables */
+  --shadow-color: rgba(30, 31, 58, 0.1);
+  --card-shadow: 0 4px 12px var(--shadow-color);
+  --button-shadow: 0 2px 5px var(--shadow-color);
+  
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
+  
+  /* Border Radius */
+  --border-radius-small: 8px;
+  --border-radius-medium: 16px;
+  --border-radius-large: 24px;
+  
+  /* Typography */
+  --font-primary: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-bold: 600;
+  
+  /* Transitions */
+  --transition-smooth: all 0.3s ease;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,26 +47,29 @@
 }
 
 body {
-  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  font-family: var(--font-primary);
   font-size: 16px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f5f7fa;
+  color: var(--text-dark);
+  background-color: var(--soft-cream);
 }
 
 h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.5em;
-  font-weight: 500;
+  font-weight: var(--font-weight-bold);
   line-height: 1.2;
+  color: var(--deep-midnight-blue);
 }
 
 a {
-  color: #5c6bc0;
+  color: var(--electric-lavender);
   text-decoration: none;
+  transition: var(--transition-smooth);
 }
 
 a:hover {
-  text-decoration: underline;
+  color: #a855f7; /* Darker shade of electric lavender */
+  text-decoration: none;
 }
 
 /* Utility classes */
@@ -50,7 +93,7 @@ a:hover {
 /* Button styles */
 .btn {
   display: inline-block;
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -59,9 +102,47 @@ a:hover {
   padding: 10px 20px;
   font-size: 16px;
   line-height: 1.5;
-  border-radius: 6px;
-  transition: all 0.2s ease-in-out;
+  border-radius: var(--border-radius-small);
+  transition: var(--transition-smooth);
   cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--sunset-coral);
+  color: var(--white);
+  box-shadow: var(--button-shadow);
+}
+
+.btn-primary:hover {
+  background-color: #ff4542; /* Slightly darker shade */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.btn-secondary {
+  background-color: var(--electric-lavender);
+  color: var(--white);
+  box-shadow: var(--button-shadow);
+}
+
+.btn-secondary:hover {
+  background-color: #a855f7; /* Darker shade */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Card styling */
+.card {
+  background-color: var(--white);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px var(--shadow-color);
 }
 
 /* Responsive container */

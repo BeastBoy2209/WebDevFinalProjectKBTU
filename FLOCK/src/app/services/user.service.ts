@@ -20,7 +20,7 @@ export class UserService {
 
   getUserProfile(): Observable<User> {
     if (this.isBrowser) {
-      return this.http.get<User>(`${environment.apiUrl}/users/profile/`)
+      return this.http.get<User>(`${environment.apiUrl}/profile`)
         .pipe(
           tap(response => console.log('Профиль успешно загружен', response)),
           catchError((error: HttpErrorResponse) => {
@@ -52,6 +52,6 @@ export class UserService {
 
   // Для получения рекомендаций пользователей (для свайпов)
   getUserRecommendations(): Observable<User[]> {
-    return this.http.get<User[]>(`${environment.apiUrl}/users/recommendations/`);
+    return this.http.get<User[]>(`${environment.apiUrl}/swipes`);
   }
 }
